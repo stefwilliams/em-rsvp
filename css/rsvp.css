@@ -1,0 +1,52 @@
+ul.ticklist {
+margin-left:0;
+}
+
+li.rsvp_user {
+list-style:none;
+padding:0;
+margin-right:20px;
+margin-bottom: 10px;
+width:150px;
+float: left;
+}
+
+li.rsvp_user .username {
+	display:block;
+	margin-top:2px;
+	
+}
+
+li.rsvp_user .instrument {
+	display:block;
+}
+
+li.rsvp_user.not-sure {
+	background-color: #e3e3e3;
+	border:2px solid gray;
+	color:#333;
+}
+
+li.rsvp_user.attend {
+	border:2px solid green;
+	background-color: #99d992;
+	color:#333;
+}
+
+li.rsvp_user.non-attend {
+	border:2px solid red;
+	background-color: #d99a92;
+	color:#333;
+}
+
+li.rsvp_user.canedit {
+	cursor:pointer;
+}	
+
+.rsvp_user .avatar img {
+	margin:5px;
+	float:left;
+	/*height and width specified because of... you guessed it, IE!! yay*/
+	width:30px;
+	height:30px;
+}	
