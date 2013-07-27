@@ -48,10 +48,10 @@ if ($event_id !=NULL) {
 	//check if there's an entry in postmeta -> 'rsvp_current' that corresponds to this event number
 	//$rsvp_check is the timestamp for the last sent RSVP, ie replaces $rsvp_sent
 	$rsvp_check = get_post_meta( $event_id, 'rsvp_current', true );
-	echo '<pre>';
-	echo 'rsvp_check = ';
-	print_r($rsvp_check);
-	echo '</pre>';
+	// echo '<pre>';
+	// echo 'rsvp_check = ';
+	// print_r($rsvp_check);
+	// echo '</pre>';
 
 	//if necessary, could use something like the below to find old RSVPs
 	// $custom_keys = get_post_custom_keys( $event_id );
@@ -100,7 +100,12 @@ if ($event_id !=NULL) {
 	//only do these queries if an rsvp has been sent already
 	if ($rsvp_check != NULL) {
 	
-		//gets number of people who have replied to latest RSVP for this event
+		//get record for current RSVP
+
+		$rsvp_current = get_post_meta( $event_id, 'rsvp_'.$rsvp_check, true );
+
+
+		//get number of people who have replied to latest RSVP for this event
 		$users_y = $wpdb->get_results( 
 			"
 			SELECT * 
@@ -131,7 +136,12 @@ if ($event_id !=NULL) {
 	$date_sent = date('D j M Y', $rsvp_check);
 	$time_sent = date('g:i a', $rsvp_check);
 	//if an RSVP has already been sent
-		if ($rsvp_check!=NULL) {						
+		if ($rsvp_check!=NULL) {	
+			echo '<pre>';
+			echo 'rsvp_current = ';
+			print_r($rsvp_current);
+			echo '</pre>';					
+
 			echo '<p>RSVP Email sent for this event on <br /><strong>'.$date_sent.' at '.$time_sent.' GMT</strong></p>';
 			echo '<p>So far, <strong>'.$users_all.' </strong>people have replied - </p><p>(<span style="color:green"><strong> '.$users_yes.'</strong> yes</span><span style="color:red;">, <strong>'.$users_no. '</strong> no</span>)</p>';
 
@@ -169,7 +179,7 @@ add_filter ('em_event_save', 'rsvp_processing',1,1);
 //Process RSVPs depending on results of $_POST value
 function rsvp_processing ($result) {
 
-if ($result) { // checks whether the event was actually saved, before proceeding, otherwise missing location or date fields will still result in RSVP processing
+if ($result) { // checks whether the event was actually saved, before proceeding, otherwise missing location or date fields will still result in RSVP being sent
 	//time which will be used to differentiate rsvps and resent rsvps. This will also be the main key to identify current RSVP to users and link to rsvp results
 	$the_time = time();
 	$old_timestamp = '';
@@ -185,7 +195,7 @@ if ($result) { // checks whether the event was actually saved, before proceeding
 
 			//find the eventmeta for the RSVP record that is being replaced
 			$old_timestamp = get_post_meta( $event_id, 'rsvp_current', true );
-			$old_meta_key = 'rsvp_'.$event_id.'_'.$old_timestamp;
+			$old_meta_key = 'rsvp_'.$old_timestamp;
 			$old_rsvp_eventmeta = get_post_meta( $event_id, $old_meta_key, true );
 			//change its 'current' status to 'no'
 			$old_rsvp_eventmeta['current'] ='no';
@@ -227,7 +237,7 @@ if ($result) { // checks whether the event was actually saved, before proceeding
 			update_post_meta( $event_id, 'rsvp_current', $the_time );
 
 			//create meta key and insert post_meta for the current RSVP
-			$meta_key = 'rsvp_'.$event_id.'_'.$the_time;
+			$meta_key = 'rsvp_'.$the_time;
 
 			$rsvp_eventmeta = array(
 				'current' 			=> 'yes',
