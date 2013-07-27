@@ -84,14 +84,18 @@ if ($event_id !=NULL) {
 	// );
 
 	//check if there were any RSVPs sent before the latest one
-	$rsvp_prevsends = $wpdb->get_results( 
-		"
-		SELECT sent_date 
-		FROM sg_em_rsvpsent 
-		WHERE event=$event_id 
-		AND resent=1
-		" 
-	);
+	// $rsvp_prevsends = $wpdb->get_results( 
+	// 	"
+	// 	SELECT sent_date 
+	// 	FROM sg_em_rsvpsent 
+	// 	WHERE event=$event_id 
+	// 	AND resent=1
+	// 	" 
+	// );
+
+	//get teh list of notcurrent RSVPs
+	$rsvp_prevsends = get_post_meta( $event_id, 'rsvp_notcurrent', true );
+
 
 	//only do these queries if an rsvp has been sent already
 	if ($rsvp_check != NULL) {
@@ -145,7 +149,7 @@ $csv=implode(",",$userlist);
 			echo '<p>Previous RSVPs for this event were sent on:';
 			echo '<ul>';
 				foreach ($rsvp_prevsends as $prevsent) {
-				echo '<li>'.date('D j M Y', $prevsent->sent_date).' ('.date('g:i a', $prevsent->sent_date).')</li>';
+				echo '<li>'.date('D j M Y', $prevsent).' ('.date('g:i a', $prevsent).')</li>';
 				}
 			echo '</ul></p>';
 			}
@@ -166,11 +170,11 @@ add_filter ('em_event_save', 'rsvp_processing',1,1);
 function rsvp_processing ($result) {
 
 if ($result) { // checks whether the event was actually saved, before proceeding, otherwise missing location or date fields will still result in RSVP processing
-	//time which will be used to differentiate rsvps and resent rsvps. This will also be the main key to identify current RSVP to users and link to rsvp results table
+	//time which will be used to differentiate rsvps and resent rsvps. This will also be the main key to identify current RSVP to users and link to rsvp results
 	$the_time = time();
 	$old_timestamp = '';
 	//global variables again for DB connections and Events
-	global $wpdb;
+	//global $wpdb;
 	global $EM_Event;
 	//current event'd ID
 	$event_id = $EM_Event->id;
@@ -187,6 +191,12 @@ if ($result) { // checks whether the event was actually saved, before proceeding
 			$old_rsvp_eventmeta['current'] ='no';
 			//and write it back to the DB
 			update_post_meta( $event_id, $old_meta_key, $old_rsvp_eventmeta );
+
+			//insert old rsvp timestamp into 'notcurrent' list;
+			$notcurrent = array();
+			$notcurrent = get_post_meta( $event_id, 'rsvp_notcurrent', true );
+			$notcurrent[] = $old_timestamp;
+			update_post_meta( $event_id, 'rsvp_notcurrent', $notcurrent );
 
 
 
@@ -221,7 +231,7 @@ if ($result) { // checks whether the event was actually saved, before proceeding
 
 			$rsvp_eventmeta = array(
 				'current' 			=> 'yes',
-				'replaces_rsvp' 	=> $old_timestamp,
+				'replaces_rsvp' 	=> $old_timestamp, //empty if not a resent rsvp
 				'event_name' 		=> $EM_Event->event_name,
 				'event_date' 		=> $EM_Event->event_start_date,
 				'event_start_time' 	=> $EM_Event->event_start_time,
