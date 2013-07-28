@@ -12,9 +12,19 @@ $user_id = $_GET [user_id];
 
 $event_id = $_GET [event_id];
 
-$the_time =  $_GET [the_time];
+$timestamp =  $_GET [timestamp];
 
 $attendance = $_GET [attendance];
+
+if ($attendance == 1) {
+	$rsvp_answer = 'yes';
+}
+elseif ($attendance == 0) {
+	$rsvp_answer = 'no';
+}
+else {
+	$rsvp_answer = 'maybe';
+}
 
 
 
@@ -81,29 +91,59 @@ Visit the web site for <a href="$event_info->guid">full details</a> of this even
 EVT;
 
 
+//Check if RSVP is current based on timestamp
+$rsvp_iscurrent = false;
 
-$rsvp_event = $wpdb->get_row( "SELECT * FROM sg_em_rsvpsent WHERE event=$event_id AND sent_date=$the_time" );
+$rsvp_check = get_post_meta( $event_id, 'rsvp_current', true );
 
-$rsvp_replied = $wpdb->get_row("SELECT * FROM sg_em_rsvprcvd WHERE event=$event_id AND user=$user_id AND timestamp=$the_time ");
 
-$rsvp_resent = $rsvp_event -> resent;	
+if ($rsvp_check == $timestamp) {
+	$rsvp_iscurrent = true;
+}
+
+//get the meta of the current RSVP
+
+$meta_key = 'rsvp_'.$timestamp;
+$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
+
+
+//get the users who have already replied to the RSVP
+// $replies_maybe = $rsvp_meta->'rsvp_maybe';
+// $replies_yes = $rsvp_meta->'rsvp_yes';
+// $replies_no = $rsvp_meta->'rsvp_no';
+
+$rsvp_url = plugins_url('em-rsvp');
+
+//$rsvp_event = $wpdb->get_row( "SELECT * FROM sg_em_rsvpsent WHERE event=$event_id AND sent_date=$timestamp" );
+
+//$rsvp_replied = $wpdb->get_row("SELECT * FROM sg_em_rsvprcvd WHERE event=$event_id AND user=$user_id AND timestamp=$timestamp ");
+
+
+
+//$rsvp_resent = $rsvp_event -> resent;	
+
+
+
+
 
 
 
 	//Case 1 - RSVP is out-of-date. Timestamp has resent flag
 
-	if ($rsvp_resent == 1) {
+	if (/*$rsvp_resent == 1*/ $rsvp_iscurrent == false) {
 
 	//Alert user to problem.
 
-	echo 'The RSVP email link you just used is not current. Some details may have changed. The latest event details are below. Please double-check whether you can make it.';
+	echo '<p><strong>The RSVP email link you just used is not current. Some details may have changed. </strong></p> <p>The latest event details are below. Please double-check whether you can make it.</p>';
 
 	//Show current event details.
 
 	echo $event_display;
 
-
-
+	echo '<p>Can you make the event as detailed above?</p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=1">Yes, I can!</a></p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=0">No, sorry...</a></p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=">Not sure, I\'ll have to think about it</a></p>';
 	//Provide new link to respond with.
 
 	//if attendance = 1, say thanks, 
@@ -116,42 +156,58 @@ $rsvp_resent = $rsvp_event -> resent;
 
 	//Case 2 - RSVP is current. Timestamp does not have resent flag
 
-	elseif ($rsvp_resent == 0 && $rsvp_replied == NULL) {
+	elseif (/*$rsvp_resent == 0 && $rsvp_replied == NULL*/ $rsvp_iscurrent == true) {
 
 	echo 'RSVP is current';echo 'no reply yet';
 
 	//add user rsvp to db. 
 
-				$wpdb->insert (
+				// $wpdb->insert (
 
-				'sg_em_rsvprcvd',
+				// 'sg_em_rsvprcvd',
 
-				array (
+				// array (
 
-					'user' => $user_id,
+				// 	'user' => $user_id,
 
-					'event' => $event_id,
+				// 	'event' => $event_id,
 
-					'timestamp' => $the_time,
+				// 	'timestamp' => $timestamp,
 
-					'attendance' => $attendance
+				// 	'attendance' => $attendance
 
-					)
+				// 	)
 
-				);
+				// );
 
 	//if attendance = 1, say thanks, 
 
-		if ($attendance == 1) {
+		if ($rsvp_answer == 'yes') {
 
-		echo 'Yay! You can make it!';
+			$rsvp_meta['rsvp_yes'][] = $user_id;
+
+			if(($key = array_search($user_id, $rsvp_meta['rsvp_no'])) !== false) {
+    			unset($rsvp_meta['rsvp_no'][$key]);
+			}
+			if(($key = array_search($user_id, $rsvp_meta['rsvp_maybe'])) !== false) {
+    			unset($rsvp_meta['rsvp_maybe'][$key]);
+			}
+
+
+		echo 'Yay! You can make it! See you there...';
 
 		}		
 
-		elseif ($attendance == 0) {
+		elseif ($rsvp_answer == 'no') {
 
-		echo 'Aww! That\'s a shame! You can\'t come!';
+			$rsvp_meta['rsvp_no'][] = $user_id;
 
+		echo 'Aww! It\'s a shame you can\'t come! If anything changes, please update the ticklist on the event page';
+
+		}
+
+		elseif ($rsvp_answer == 'maybe') {
+			# code...
 		}
 
 	}	//if attendance = 0, say boo
