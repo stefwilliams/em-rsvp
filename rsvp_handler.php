@@ -1,6 +1,33 @@
 <?php
 
 
+function rsvp_answer_current($answer, $user_id, $event_id){
+	//Check current RSVP for timestamp
+	$timestamp = get_post_meta( $event_id, 'rsvp_current', true );
+	//get the meta of the current RSVP
+	$meta_key = 'rsvp_'.$timestamp;
+	$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
+
+	$the_answer = array($answer);
+
+	$all_answers = array('yes', 'no', 'maybe');
+
+	$not_answers = array_diff($all_answers, $the_answer);
+
+	$rsvp_meta['rsvp_'.$answer][] = $user_id;
+
+	foreach ($not_answers as $not_answer) {
+
+		$rsvp_meta['rsvp_'.$not_answer] = array_diff($rsvp_meta['rsvp_'.$not_answer], array($user_id));
+
+			// if(($key = array_search($user_id, $rsvp_meta['rsvp_'.$not_answer])) !== false) {
+   //  			unset($rsvp_meta['rsvp_'.$not_answer][$key]);
+			// }
+	}
+		update_post_meta( $event_id, $meta_key, $rsvp_meta );
+};
+
+
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/wp-blog-header.php');
 
@@ -22,7 +49,7 @@ if ($attendance == 1) {
 elseif ($attendance == 0) {
 	$rsvp_answer = 'no';
 }
-else {
+elseif ($attendance == 2) {
 	$rsvp_answer = 'maybe';
 }
 
@@ -101,10 +128,7 @@ if ($rsvp_check == $timestamp) {
 	$rsvp_iscurrent = true;
 }
 
-//get the meta of the current RSVP
 
-$meta_key = 'rsvp_'.$timestamp;
-$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
 
 
 //get the users who have already replied to the RSVP
@@ -141,9 +165,9 @@ $rsvp_url = plugins_url('em-rsvp');
 	echo $event_display;
 
 	echo '<p>Can you make the event as detailed above?</p>';
-	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=1">Yes, I can!</a></p>';
-	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=0">No, sorry...</a></p>';
-	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$timestamp.'&user_id='.$user_id.'&attendance=">Not sure, I\'ll have to think about it</a></p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=1">Yes, I can!</a></p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=0">No, sorry...</a></p>';
+	echo '<p><a href="'.$rsvp_url.'/rsvp_handler.php?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=2">Not sure, I\'ll have to think about it</a></p>';
 	//Provide new link to respond with.
 
 	//if attendance = 1, say thanks, 
@@ -184,47 +208,43 @@ $rsvp_url = plugins_url('em-rsvp');
 
 		if ($rsvp_answer == 'yes') {
 
-			$rsvp_meta['rsvp_yes'][] = $user_id;
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
 
-			if(($key = array_search($user_id, $rsvp_meta['rsvp_no'])) !== false) {
-    			unset($rsvp_meta['rsvp_no'][$key]);
-			}
-			if(($key = array_search($user_id, $rsvp_meta['rsvp_maybe'])) !== false) {
-    			unset($rsvp_meta['rsvp_maybe'][$key]);
-			}
+	
+			echo 'Yay! You can make it! See you there...';
 
-
-		echo 'Yay! You can make it! See you there...';
 
 		}		
 
 		elseif ($rsvp_answer == 'no') {
 
-			$rsvp_meta['rsvp_no'][] = $user_id;
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
 
-		echo 'Aww! It\'s a shame you can\'t come! If anything changes, please update the ticklist on the event page';
+			echo 'Aww! It\'s a shame you can\'t come! If anything changes, please update the ticklist on the event page';
 
 		}
 
 		elseif ($rsvp_answer == 'maybe') {
-			# code...
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
+
+			echo 'Not sure, huh? Please update the ticklist when you know for sure';
 		}
 
 	}	//if attendance = 0, say boo
 
-	elseif ($rsvp_resent == 0 && $rsvp_replied != NULL) {
+	// elseif ($rsvp_resent == 0 && $rsvp_replied != NULL) {
 
-		echo 'It looks like you\'ve already replied to this RSVP.';
+	// 	echo 'It looks like you\'ve already replied to this RSVP.';
 
-	}
+	// }
 
 
 
-	else {
+	// else {
 
-	echo 'WTF? How did you get here? Tell Stef you saw this messsage';
+	// echo 'WTF? How did you get here? Tell Stef you saw this messsage';
 
-	}
+	// }
 
 //Case 3 - User has already responded to current RSVP. 
 
@@ -236,8 +256,8 @@ $rsvp_url = plugins_url('em-rsvp');
 
 //If repeating status, we knew already, but thanks for letting us know again!
 
-echo '<pre>'; print_r($event_location); echo '</pre>';
+// echo '<pre>'; print_r($event_location); echo '</pre>';
 
-echo '<pre>'; print_r($event_info); echo '</pre>';
+// echo '<pre>'; print_r($event_info); echo '</pre>';
 
 ?>

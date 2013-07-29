@@ -106,27 +106,11 @@ if ($event_id !=NULL) {
 
 
 		//get number of people who have replied to latest RSVP for this event
-		$users_y = $wpdb->get_results( 
-			"
-			SELECT * 
-			FROM sg_em_rsvprcvd 
-			WHERE event=$event_id 
-			AND timestamp=$rsvp_check 
-			AND attendance=1
-			" 
-		);
-		$users_yes = $wpdb->num_rows;
+		$users_y = $rsvp_current['rsvp_yes'];
+		$users_yes = count($users_y);
 		
-		$users_n = $wpdb->get_results( 
-			"
-			SELECT * 
-			FROM sg_em_rsvprcvd 
-			WHERE event=$event_id 
-			AND timestamp=$rsvp_check 
-			AND attendance=0
-			" 
-		);
-		$users_no = $wpdb->num_rows;
+		$users_n = $rsvp_current['rsvp_no'];
+		$users_no = count($users_n);
 		
 		$users_all = $users_yes + $users_no;
 	}
