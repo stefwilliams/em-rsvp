@@ -14,6 +14,43 @@ include 'rsvp_widget.php';
 include 'rsvp_list.php';
 //add RSVP checkbox to user profile page - allow users to choose whether or not they are alerted about events with RSVP requests. Lifted from: http://blog.ftwr.co.uk/archives/2009/07/19/adding-extra-user-meta-fields/
 
+function rsvp_responses ($event_id) {
+	//check if there's an entry in postmeta -> 'rsvp_current' that corresponds to this event number
+	//$rsvp_check is the timestamp for the last sent RSVP, ie replaces $rsvp_sent
+	$rsvp_check = get_post_meta( $event_id, 'rsvp_current', true );
+
+	//only do these queries if an rsvp has been sent already
+	if ($rsvp_check != NULL) {
+		//get record for current RSVP
+		$rsvp_current = get_post_meta( $event_id, 'rsvp_'.$rsvp_check, true );
+		//get number of people who have replied to latest RSVP for this event
+		$users_y = $rsvp_current['rsvp_yes'];
+		$users_yes = count($users_y);
+		//
+		$users_n = $rsvp_current['rsvp_no'];
+		$users_no = count($users_n);
+		//
+		$users_m = $rsvp_current['rsvp_maybe'];
+		$users_maybe = count($users_m);
+		//
+		$rsvp_responses = array(
+			'current_rsvp' => $rsvp_check,
+			'yes' => $users_y,
+			'yes_count' => $users_yes,
+			'no' => $users_n,
+			'no_count' => $users_no,
+			'maybe' => $users_m,
+			'maybe_count' => $users_maybe,			
+			);
+		return $rsvp_responses;
+	}
+	else {
+		return NULL;
+	}
+}
+
+
+
 //add RSVP checkbox to EM Admin page by:
 //1) hooking into 'add_meta_boxes' action
 add_action( 'add_meta_boxes', 'rsvp_add_custom_box' );
@@ -43,77 +80,27 @@ function rsvp_box (){
 	$event_id = $EM_Event->id;
 	$rsvp_check = NULL; 
 
+
 //if there is an event number
 if ($event_id !=NULL) {
-	//check if there's an entry in postmeta -> 'rsvp_current' that corresponds to this event number
-	//$rsvp_check is the timestamp for the last sent RSVP, ie replaces $rsvp_sent
-	$rsvp_check = get_post_meta( $event_id, 'rsvp_current', true );
-	// echo '<pre>';
-	// echo 'rsvp_check = ';
-	// print_r($rsvp_check);
-	// echo '</pre>';
 
-	//if necessary, could use something like the below to find old RSVPs
-	// $custom_keys = get_post_custom_keys( $event_id );
-	// echo '<pre>';
-	// echo 'custom keys = ';
-	// print_r($custom_keys);
-	// echo '</pre>';
-	// echo '<pre>';
-	// echo 'EM_Event = ';
-	// print_r($EM_Event);
-	// echo '</pre>';
+	$rsvp_responses = rsvp_responses($event_id);
 
+	echo '$rsvp_responses: <br />';
+	var_dump($rsvp_responses);
+	echo '<br />';
+	$rsvp_check = $rsvp_responses['current_rsvp'];
 
-	// $rsvp_check = $wpdb->get_results( 
-	// 	"
-	// 	SELECT * 
-	// 	FROM sg_em_rsvpsent 
-	// 	WHERE event=$event_id
-	// 	" 
-	// );
+	$users_yes = $rsvp_responses['yes_count'];
+	$users_no = $rsvp_responses['no_count'];
+	$users_maybe = $rsvp_responses['maybe_count'];
 
-	//get the date the last RSVP was sent <- rsvp_sent replaced by rsvp_check below
-	// $rsvp_sent = $wpdb->get_var( 
-	// 	"
-	// 	SELECT sent_date 
-	// 	FROM sg_em_rsvpsent 
-	// 	WHERE event=$event_id 
-	// 	AND resent=0
-	// 	"  
-	// );
+	$users_all = $users_yes + $users_no + $users_maybe;
 
-	//check if there were any RSVPs sent before the latest one
-	// $rsvp_prevsends = $wpdb->get_results( 
-	// 	"
-	// 	SELECT sent_date 
-	// 	FROM sg_em_rsvpsent 
-	// 	WHERE event=$event_id 
-	// 	AND resent=1
-	// 	" 
-	// );
-
-	//get teh list of notcurrent RSVPs
+		//get the list of notcurrent RSVPs
 	$rsvp_prevsends = get_post_meta( $event_id, 'rsvp_notcurrent', true );
 
 
-	//only do these queries if an rsvp has been sent already
-	if ($rsvp_check != NULL) {
-	
-		//get record for current RSVP
-
-		$rsvp_current = get_post_meta( $event_id, 'rsvp_'.$rsvp_check, true );
-
-
-		//get number of people who have replied to latest RSVP for this event
-		$users_y = $rsvp_current['rsvp_yes'];
-		$users_yes = count($users_y);
-		
-		$users_n = $rsvp_current['rsvp_no'];
-		$users_no = count($users_n);
-		
-		$users_all = $users_yes + $users_no;
-	}
 }
 
 	//convert date format
@@ -122,12 +109,12 @@ if ($event_id !=NULL) {
 	//if an RSVP has already been sent
 		if ($rsvp_check!=NULL) {	
 			echo '<pre>';
-			echo 'rsvp_current = ';
-			print_r($rsvp_current);
+			echo 'rsvp_check = ';
+			print_r($rsvp_check);
 			echo '</pre>';					
 
 			echo '<p>RSVP Email sent for this event on <br /><strong>'.$date_sent.' at '.$time_sent.' GMT</strong></p>';
-			echo '<p>So far, <strong>'.$users_all.' </strong>people have replied - </p><p>(<span style="color:green"><strong> '.$users_yes.'</strong> yes</span><span style="color:red;">, <strong>'.$users_no. '</strong> no</span>)</p>';
+			echo '<p>So far, <strong>'.$users_all.' </strong>people have replied - </p><p>(<span style="color:green"><strong> '.$users_yes.'</strong> yes</span><span style="color:red;">, <strong>'.$users_no. '</strong> no</span><span style="color:gray;">, <strong>'.$users_maybe. '</strong> maybe</span>)</p>';
 
 	$rsvp_users_replied = $wpdb -> get_results ("SELECT user from sg_em_rsvprcvd WHERE event=$event_id");
 
@@ -176,7 +163,6 @@ function rsvp_processing ($result) {
 		$rsvp_status = $_POST['rsvp_status'];
 
 			if ($rsvp_status == 'resend_rsvp') {
-
 				//find the eventmeta for the RSVP record that is being replaced
 				$old_timestamp = get_post_meta( $event_id, 'rsvp_current', true ); // <-- gets set only if resend_rsvp is true
 				$old_meta_key = 'rsvp_'.$old_timestamp;
@@ -191,28 +177,6 @@ function rsvp_processing ($result) {
 				$notcurrent = get_post_meta( $event_id, 'rsvp_notcurrent', true );
 				$notcurrent[] = $old_timestamp;
 				update_post_meta( $event_id, 'rsvp_notcurrent', $notcurrent );
-
-
-
-
-				//flag sg_em_rsvpsent resent to show that a new rsvp has been sent
-				// $wpdb->query (
-				// "
-				// UPDATE sg_em_rsvpsent
-				// SET resent = 1
-				// WHERE event = $event_id
-				// AND resent = 0
-				// "
-				// );
-			// write new rsvp entry using current timestamp - same query as for first rsvp
-				// $wpdb->insert (
-				// 'sg_em_rsvpsent',
-				// array (
-				// 	'event' => $event_id,
-				// 	'sent_date' => $timestamp,
-				// 	)
-				// );
-				//rsvp_email($rsvp_eventmeta);
 			}
 			
 			//if no rsvp has been sent yet, and one is due to be sent
@@ -280,6 +244,8 @@ $rsvp_url = plugins_url('em-rsvp');
 $rsvp_field_id = xprofile_get_field_id_from_name('RSVP Requests?');
 $rsvp_users = array();
 //$rsvp_users = SELECT user_id FROM sg_bp_xprofile_data WHERE field_id_id = $rsvp_field_id AND value = 'Yes';
+
+// all users who have chosen to receive RSVPs
 $rsvp_users = $wpdb->get_results( 
 		"
 		SELECT user_id 
@@ -305,7 +271,6 @@ $debug_users = serialize($rsvp_users);
 
 	//message for first RSVP being sent
 $rsvp_user_meta = get_userdata($rsvp_user->user_id);
-$rsvp_user_email = 
 
 $rsvp_header = '[SG] A new event has been listed. Can you make it?';
 
@@ -343,18 +308,32 @@ MSG;
 }
 elseif ($rsvp_status == 'resend_rsvp') {
 	//get user ids of those who have replied to previous RSVPs
-	$rsvp_users_replied = $wpdb -> get_results ("SELECT user from sg_em_rsvprcvd WHERE event=$event_id");
 
-	//create an array that just has the user ids
-	$userlist=array();
-			foreach ($rsvp_users_replied as $resend_special) {
-				$userlist[]=$resend_special->user;
-			}
+	// from yes, no and maybe list
+
+
+	$rsvp_responses = rsvp_responses($event_id);
+
+	$rsvp_yes = $rsvp_responses['yes'];
+	$rsvp_no = $rsvp_responses['no'];
+	$rsvp_maybe = $rsvp_responses['maybe'];
+
+	
+	//merge the list of all replies	
+	$users_replied = array_merge((array)$rsvp_yes, (array)$rsvp_no, (array)$rsvp_maybe);
+
+	//get the list of users who ARE rsvp users but HAVEN'T replied
+
+	$rsvp_users_serialized = serialize($rsvp_users);
+
+	$users_not_replied = array_diff($rsvp_users_serialized, $users_replied);
+
 	//implode the list and separate with commas so that we can insert it into the get_users argument
-	$userlist=implode(",",$userlist);
+	$userlistsimple=implode(",",$users_not_replied);
+	$userlistspecial=implode(",",$users_replied);
 
 //get user details for those who HAVE NOT already replied
-	$rsvp_users_resend_simple = get_users ('exclude='.$userlist);
+	$rsvp_users_resend_simple = get_users ('include='.$userlistsimple);
 foreach ($rsvp_users_resend_simple as $rsvp_user_resend_simple) {
 //message for RSVP being resent
 $rsvp_resend_header = '[SG] An event\'s details have changed. Please ignore previous emails';
@@ -368,8 +347,8 @@ $rsvp_resend_msg =
 <h4>Location: $event_location</h4>
 <h4>Category: $event_category</h4>
 <br/>
-<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user->user_id&attendance=1">Yes! I'm in!</a><br/>
-<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user->user_id&attendance=0">Nope, sorry got better things to do</a>
+<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user_resend_simple->ID&attendance=1">Yes! I'm in!</a><br/>
+<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user_resend_simple->ID&attendance=0">Nope, sorry got better things to do</a>
 <br/>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
@@ -389,7 +368,7 @@ MSG;
 
 //get user details for those who HAVE already replied
 
-	$rsvp_users_resend_special = get_users ('include='.$userlist);
+	$rsvp_users_resend_special = get_users ('include='.$userlistspecial);
 
 foreach ($rsvp_users_resend_special as $rsvp_user_resend_special) {
 //message for RSVP being resent. Special alert for people who have already replied
@@ -405,8 +384,8 @@ $rsvp_special_msg =
 <h4>Location: $event_location</h4>
 <h4>Category: $event_category</h4>
 <br/>
-<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user->user_id&attendance=1">Yes! I'm in!</a><br />
-<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user->user_id&attendance=0">Nope, sorry got better things to do</a>
+<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user_resend_special->ID&attendance=1">Yes! I'm in!</a><br />
+<a class="$rsvp_status" href="$rsvp_url/rsvp_handler.php?event_id=$event_id&timestamp=$timestamp&user_id=$rsvp_user_resend_special->IDattendance=0">Nope, sorry got better things to do</a>
 <br/>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
