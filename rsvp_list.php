@@ -1,7 +1,5 @@
 <?php
 
-include('rsvp_functions.php');
-
 $plugins_url = plugins_url('em-rsvp');
 
 wp_enqueue_style(				
