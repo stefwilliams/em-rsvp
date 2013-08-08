@@ -50,9 +50,6 @@ if ($event_id !=NULL) {
 
 	$rsvp_responses = rsvp_responses($event_id);
 
-	echo '$rsvp_responses: <br />';
-	var_dump($rsvp_responses);
-	echo '<br />';
 	$rsvp_check = $rsvp_responses['current_rsvp'];
 
 	$users_yes = $rsvp_responses['yes_count'];
@@ -149,7 +146,6 @@ function rsvp_processing ($result) {
 			//if no rsvp has been sent yet, and one is due to be sent
 			if ($rsvp_status == 'send_rsvp' || $rsvp_status == 'resend_rsvp') {
 				//mark this timestamp as the current rsvp for this event
-				update_post_meta( $event_id, 'rsvp_current', $timestamp );
 
 				//create meta key and insert post_meta for the current RSVP
 				$meta_key = 'rsvp_'.$timestamp;
@@ -171,6 +167,9 @@ function rsvp_processing ($result) {
 
 				//send the eventmeta for the mail function to use
 				rsvp_email($rsvp_eventmeta, $rsvp_status, $timestamp);
+
+
+				update_post_meta( $event_id, 'rsvp_current', $timestamp );
 
 				//simply insert the details of this event and the timestamp
 				// $wpdb->insert (
@@ -247,16 +246,8 @@ $rsvp_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>(This event was sent by $event_contact.)</p>
+<p>(This RSVP request was sent by $event_contact.)</p>
 
-<h1>DEBUG INFO</h1>
-<h2>RSVP_USERS</h2>
-$debug_users;
-<h2>THIS USER</h2>
-<p>User nice name: $rsvp_user->user_nice_name</p>
-<p>Display Name: $rsvp_user->display_name</p>
-<p>Email: $rsvp_user->user_email</p>
-$debug_user_meta;
 MSG;
 		wp_mail (/*$rsvp_user->user_email*/'stefwilliams+rsvp_user@gmail.com', $rsvp_header, $rsvp_msg);
 	}
@@ -269,13 +260,21 @@ elseif ($rsvp_status == 'resend_rsvp') {
 
 	$rsvp_responses = rsvp_responses($event_id);
 
+	$debug_responses = var_export($rsvp_responses, true);
+
 	$rsvp_yes = $rsvp_responses['yes'];
 	$rsvp_no = $rsvp_responses['no'];
 	$rsvp_maybe = $rsvp_responses['maybe'];
 
+	// $debug_yes = var_export($rsvp_yes, true);
+	// $debug_no = var_export($rsvp_no, true);
+	// $debug_maybe = var_export($rsvp_maybe, true);
+
 	
 	//merge the list of all replies	
 	$users_replied = array_merge((array)$rsvp_yes, (array)$rsvp_no, (array)$rsvp_maybe);
+
+	// $debug_u_r = var_export($users_replied, true);
 
 	//get the list of users who ARE rsvp users but HAVEN'T replied
 
@@ -283,17 +282,21 @@ elseif ($rsvp_status == 'resend_rsvp') {
 
 	$users_not_replied = array_diff($rsvp_all_users, $users_replied);
 
+	// $debug_u_n_r = var_export($users_not_replied, true);
+
 	//implode the list and separate with commas so that we can insert it into the get_users argument
 	$userlistsimple=implode(",",$users_not_replied);
 	$userlistspecial=implode(",",$users_replied);
 
 //get user details for those who HAVE NOT already replied
 	$rsvp_users_resend_simple = get_users('include='.$userlistsimple);
+
 foreach ($rsvp_users_resend_simple as $rsvp_user) {
 //message for RSVP being resent
 $rsvp_resend_header = '[SG] An event\'s details have changed. Please ignore previous emails';
 $rsvp_resend_msg = 
 <<<MSG
+
 <p>This event's details have changed. Please ignore previous RSVP requests for this event.</p>
 <br/>
 <h3>Event Name: $event_name</h3>
@@ -310,7 +313,7 @@ $rsvp_resend_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>(This event was sent by $event_contact.)</p>
+<p>(This RSVP request was sent by $event_contact.)</p>
 
 
 MSG;
@@ -326,6 +329,7 @@ foreach ($rsvp_users_resend_special as $rsvp_user) {
 $rsvp_special_header = '[SG]Event changed! Please update your RSVP status';
 $rsvp_special_msg =
 <<<MSG
+
 <p>This event's details have changed. Please ignore previous RSVP requests for this event and update your status.</p>
 <p><strong>Important:</strong>If you've previously RSVP'd to this event, you will need to do so again.</p>
 <br/>
@@ -343,7 +347,7 @@ $rsvp_special_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>(This event was sent by $event_contact.)</p>
+<p>(This RSVP request was sent by $event_contact.)</p>
 
 
 MSG;
@@ -352,71 +356,6 @@ MSG;
 
 }
 
-}
-
-function totestinconsole() {
-
-$rsvp_all_users = rsvp_get_users();
-$rsvp_status = "resend_rsvp";
-
-//insert header for HTML emails
-//add_filter('wp_mail_content_type',create_function('', 'return "text/html";'));
-
-if ($rsvp_status == 'send_rsvp') {
-
-$rsvp_users = implode(",",$rsvp_all_users);
-$rsvp_users = get_users('include='.$rsvp_users);
-	
-	//$debug_users = serialize($rsvp_users);
-
-
-	foreach ($rsvp_users as $rsvp_user) {
-		print_r ('<br />rsvp_user: '.$rsvp_user->user_email.'<br />');
-	
-	}
-}
-elseif ($rsvp_status == 'resend_rsvp') {
-	//get user ids of those who have replied to previous RSVPs
-
-	// from yes, no and maybe list
-
-
-	$rsvp_responses = rsvp_responses(19);
-	$rsvp_yes = $rsvp_responses['yes'];
-	$rsvp_no = $rsvp_responses['no'];
-	$rsvp_maybe = $rsvp_responses['maybe'];
-
-
-	
-	//merge the list of all replies	
-	$users_replied = array_merge((array)$rsvp_yes, (array)$rsvp_no, (array)$rsvp_maybe);
-
-	//get the list of users who ARE rsvp users but HAVEN'T replied
-
-	//$rsvp_users_serialized = serialize($rsvp_users);
-
-	$users_not_replied = array_diff($rsvp_all_users, $users_replied);
-	//implode the list and separate with commas so that we can insert it into the get_users argument
-	$userlistsimple=implode(",",$users_not_replied);
-	$userlistspecial=implode(",",$users_replied);
-
-//get user details for those who HAVE NOT already replied
-	$rsvp_users_resend_simple = get_users ('include='.$userlistsimple);
-foreach ($rsvp_users_resend_simple as $rsvp_user) {
-		print_r ('<br />rsvp_users_resend_simple: '.$rsvp_user->user_email.'<br />');
-}
-
-//get user details for those who HAVE already replied
-
-	$rsvp_users_resend_special = get_users ('include='.$userlistspecial);
-	
-	//var_dump($rsvp_users_resend_special);
-
-foreach ($rsvp_users_resend_special as $rsvp_user) {
-print_r ('<br />rsvp_users_resend_special: '.$rsvp_user->user_email.'<br />');
-}
-
-}
 }
 
 
