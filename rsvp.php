@@ -162,11 +162,14 @@ function rsvp_processing ($result) {
 					'rsvp_yes' 			=> array(),
 					'rsvp_no' 			=> array()
 				);
+				//send the eventmeta for the mail function to use
+				// SEND THE MAILS BEFORE updating the post_meta, otherwise it will send to the wrong people :)
+				rsvp_email($rsvp_eventmeta, $rsvp_status, $timestamp);
+
 
 				update_post_meta( $event_id, $meta_key, $rsvp_eventmeta );
 
-				//send the eventmeta for the mail function to use
-				rsvp_email($rsvp_eventmeta, $rsvp_status, $timestamp);
+
 
 
 				update_post_meta( $event_id, 'rsvp_current', $timestamp );
