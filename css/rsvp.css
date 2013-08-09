@@ -14,6 +14,9 @@ float: left;
 li.rsvp_user .username {
 	display:block;
 	margin-top:2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	
 }
 
