@@ -10,6 +10,38 @@
 	 * lifted from http://php.net/manual/en/function.sort.php (david wh thomas at gm at 1l dot c0m). Function renamed to arraysort from vsort
 	 */
 
+function rsvp_answer_current($answer, $user_id, $event_id){
+	//Check current RSVP for timestamp
+	$timestamp = get_post_meta( $event_id, 'rsvp_current', true );
+	//get the meta of the current RSVP
+	$meta_key = 'rsvp_'.$timestamp;
+	$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
+
+	$the_answer = array($answer);
+
+	$all_answers = array('yes', 'no', 'maybe');
+
+	$not_answers = array_diff($all_answers, $the_answer);
+
+	$rsvp_meta['rsvp_'.$answer][] = $user_id;
+
+	foreach ($not_answers as $not_answer) {
+
+		$rsvp_meta['rsvp_'.$not_answer] = array_diff($rsvp_meta['rsvp_'.$not_answer], array($user_id));
+
+			// if(($key = array_search($user_id, $rsvp_meta['rsvp_'.$not_answer])) !== false) {
+   //  			unset($rsvp_meta['rsvp_'.$not_answer][$key]);
+			// }
+	}
+		$return = update_post_meta( $event_id, $meta_key, $rsvp_meta );
+		if ($return == true) {
+			return true;
+		}
+		else {
+			return false;
+		}
+};
+
 
 //Function to return simple array of users who should receive RSVP alerts    
 function rsvp_get_users() {

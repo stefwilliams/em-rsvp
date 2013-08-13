@@ -1,47 +1,21 @@
 <?php
 
-
-function rsvp_answer_current($answer, $user_id, $event_id){
-	//Check current RSVP for timestamp
-	$timestamp = get_post_meta( $event_id, 'rsvp_current', true );
-	//get the meta of the current RSVP
-	$meta_key = 'rsvp_'.$timestamp;
-	$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
-
-	$the_answer = array($answer);
-
-	$all_answers = array('yes', 'no', 'maybe');
-
-	$not_answers = array_diff($all_answers, $the_answer);
-
-	$rsvp_meta['rsvp_'.$answer][] = $user_id;
-
-	foreach ($not_answers as $not_answer) {
-
-		$rsvp_meta['rsvp_'.$not_answer] = array_diff($rsvp_meta['rsvp_'.$not_answer], array($user_id));
-
-			// if(($key = array_search($user_id, $rsvp_meta['rsvp_'.$not_answer])) !== false) {
-   //  			unset($rsvp_meta['rsvp_'.$not_answer][$key]);
-			// }
-	}
-		update_post_meta( $event_id, $meta_key, $rsvp_meta );
-};
-
-
-
 require_once($_SERVER['DOCUMENT_ROOT'].'/wp-blog-header.php');
+
+require_once($rsvp_url.'rsvp_functions.php');
 
 global $EM_Event;
 
 global $wpdb;
+$rsvp_url = plugins_url('em-rsvp');
 
-$user_id = $_GET [user_id];
+$user_id = $_GET ['user_id'];
 
-$event_id = $_GET [event_id];
+$event_id = $_GET ['event_id'];
 
-$timestamp =  $_GET [timestamp];
+$timestamp =  $_GET ['timestamp'];
 
-$attendance = $_GET [attendance];
+$attendance = $_GET ['attendance'];
 
 if ($attendance == 1) {
 	$rsvp_answer = 'yes';
@@ -136,7 +110,7 @@ if ($rsvp_check == $timestamp) {
 // $replies_yes = $rsvp_meta->'rsvp_yes';
 // $replies_no = $rsvp_meta->'rsvp_no';
 
-$rsvp_url = plugins_url('em-rsvp');
+
 
 //$rsvp_event = $wpdb->get_row( "SELECT * FROM sg_em_rsvpsent WHERE event=$event_id AND sent_date=$timestamp" );
 

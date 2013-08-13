@@ -14,6 +14,9 @@ float: left;
 li.rsvp_user .username {
 	display:block;
 	margin-top:2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	
 }
 
@@ -21,19 +24,19 @@ li.rsvp_user .instrument {
 	display:block;
 }
 
-li.rsvp_user.not-sure {
+li.rsvp_user.maybe {
 	background-color: #e3e3e3;
 	border:2px solid gray;
 	color:#333;
 }
 
-li.rsvp_user.attend {
+li.rsvp_user.yes {
 	border:2px solid green;
 	background-color: #99d992;
 	color:#333;
 }
 
-li.rsvp_user.non-attend {
+li.rsvp_user.no {
 	border:2px solid red;
 	background-color: #d99a92;
 	color:#333;
