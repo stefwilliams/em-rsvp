@@ -143,17 +143,9 @@ function rsvp_ticklist ( $content ){
 					$attendance = 'maybe';
 				}
 				// get other usermeta
-<<<<<<< HEAD
-<<<<<<< HEAD
 				$usermeta = get_userdata( $user->ID );	
 
 				$nonce = wp_create_nonce( 'rsvp-nonce' );
-=======
-				$usermeta = get_userdata( $user->ID );			
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
-=======
-				$usermeta = get_userdata( $user->ID );			
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 
 				// make user_details array to insert into master array
 				$user_details=array();
@@ -252,15 +244,7 @@ function switchState(that,current,next){
 		var id=that.attr('id');
 		var e_id='<?php echo $event_id ?>';
 		var sent_date='<?php echo $rsvp_sent ?>';
-<<<<<<< HEAD
-<<<<<<< HEAD
 	jQuery.get(base_url+'/rsvp_list_handler.php?nonce='+nonce+'&id='+id+'&e_id='+e_id+'&sent='+sent_date+'&state='+next,function(data, status){
-=======
-=======
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
-	jQuery.get(base_url+'/rsvp_list_handler.php?id='+id+'&e_id='+e_id+'&sent='+sent_date+'&state='+next,function(data, status){
-		console.log('status',status);
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 		if (data==='OK')that.removeClass(current).addClass(next);
 	})
 }
@@ -352,22 +336,11 @@ function rsvp_user_box ($muso) {
 				}
 
 				$att = $muso['attendance'];
-<<<<<<< HEAD
-<<<<<<< HEAD
 				$state='maybe';
 				if ($att=='no'){
 					$state='no';
 				} elseif ($att=='yes'){
 					$state = 'yes';
-=======
-=======
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
-				$state='not-sure';
-				if ($att=='no'){
-					$state='non-attend';
-				} elseif ($att=='yes'){
-					$state = 'attend';
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 				}
 				echo '<li id="user'.$muso['id'].'" class="well rsvp_user '.$state.' '.$canedit.'"><span class="avatar">'.$avatar.'</span><span class="username">'.$muso['firstname'].' '.$muso['lastname'].'</span><span class="instrument">'.$muso['instrument'].'</span>';
 
