@@ -1,14 +1,137 @@
 <?php
-	/**
-	 * Sorts an array of objects by the value of one of the object properties or array keys
-	 *
-	 * @param array $array
-	 * @param key value $id
-	 * @param boolean $sort_ascending
-	 * @param boolean $is_object_array
-	 * @return array
-	 * lifted from http://php.net/manual/en/function.sort.php (david wh thomas at gm at 1l dot c0m). Function renamed to arraysort from vsort
-	 */
+
+function rsvp_handler() {
+
+$url = $_SERVER['REQUEST_URI'];
+	$url_parts = parse_url($url);
+parse_str($url_parts['query'],$query_vars);
+
+
+global $EM_Event;
+
+global $wpdb;
+$rsvp_url = $url_parts ['path'];
+
+$user_id = $query_vars ['user_id'];
+
+$event_id = $query_vars ['event_id'];
+
+$timestamp =  $query_vars ['timestamp'];
+
+$attendance = $query_vars ['attendance'];
+
+$md5_sent = $query_vars ['md5'];
+
+$md5 = md5($user_id.$event_id.$timestamp);
+
+
+if ($md5_sent != $md5) {
+	echo '<h3>It looks like something went wrong.</h3> <p>Are you sure you clicked the link in your email?</p>';
+	goto rsvp_end;
+}
+
+
+
+if ($attendance == 1) {
+	$rsvp_answer = 'yes';
+}
+elseif ($attendance == 0) {
+	$rsvp_answer = 'no';
+}
+elseif ($attendance == 2) {
+	$rsvp_answer = 'maybe';
+}
+
+
+
+// gets the details of the event and formats the text to display and hides info if fields are empty.
+
+$event_info = EM_Events::get(array ('event'=>$event_id));
+$event_info = $event_info[0];
+$event_location=$event_info->get_location();
+$event_start = $event_info->start;
+$event_end = $event_info->end;
+$event_start_date = date('l jS M Y', $event_start);
+$event_start_time = date('g:i a', $event_start);
+$event_end_date = date('- l jS M Y', $event_end);
+$event_end_time = date('- g:i a', $event_end);
+
+if ($event_location->location_postcode) {
+	$postcode = $event_location->location_postcode;
+	$postcode = ' '.$postcode;
+}
+
+if ($event_start_date == $event_start_date) {
+	$event_end_date = NULL;
+}
+
+$event_display = 
+
+<<<EVT
+<h3>$event_info->event_name</h3>
+<p><strong>Date: </strong>$event_start_date $event_end_date</p>
+<p><strong>Time: </strong>$event_start_time $event_end_time</p>
+<p><strong>Location: </strong>$event_location->location_name, $event_location->location_address $postcode</p>
+<h4>Brief</h4>
+<p>$event_info->post_excerpt</p>
+<h4>Full Description</h4>
+<p>$event_info->notes</p>
+<p>Visit the web site for <a href="$event_info->guid">full details</a> of this event.</p>
+EVT;
+
+
+//Check if RSVP is current based on timestamp
+$rsvp_iscurrent = false;
+$rsvp_check = get_post_meta( $event_id, 'rsvp_current', true );
+
+if ($rsvp_check == $timestamp) {
+	$rsvp_iscurrent = true;
+}
+
+	//Case 1 - RSVP is out-of-date. Timestamp has resent flag
+
+	if (/*$rsvp_resent == 1*/ $rsvp_iscurrent == false) {
+
+	//Alert user to problem.
+
+	echo '<p><strong>The RSVP email link you just used is not current. Some details may have changed. </strong></p> <p>The latest event details are below. Please double-check whether you can make it.</p>';
+
+	//Show current event details.
+
+	echo $event_display;
+	//Provide new link to respond with.
+	echo '<p>Can you make the event as detailed above?</p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=1">Yes, I can!</a></p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=0">No, sorry...</a></p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=2">Not sure, I\'ll have to think about it</a></p>';
+
+	}
+
+	//Case 2 - RSVP is current. Timestamp does not have resent flag
+
+	elseif ($rsvp_iscurrent == true) {
+
+		if ($rsvp_answer == 'yes') {
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
+			echo '<h3>Yay! You can make it!</h3> <p>  See you there...</p>';
+		}		
+
+		elseif ($rsvp_answer == 'no') {
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
+			echo '<h3>Aww! It\'s a shame you can\'t come!</h3> <p> If anything changes, please update the ticklist on the event page</p>';
+		}
+
+		elseif ($rsvp_answer == 'maybe') {
+			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
+			echo '<h3>Not sure, huh?</h3> <p>Please update the ticklist when you know for sure</p>';
+		}
+
+	}
+rsvp_end: //goto marker if md5 check fails.
+}
+
+add_shortcode( 'rsvp_handler', 'rsvp_handler' );
+
 
 function rsvp_answer_current($answer, $user_id, $event_id){
 	//Check current RSVP for timestamp
@@ -16,22 +139,13 @@ function rsvp_answer_current($answer, $user_id, $event_id){
 	//get the meta of the current RSVP
 	$meta_key = 'rsvp_'.$timestamp;
 	$rsvp_meta = get_post_meta( $event_id, $meta_key, true);
-
 	$the_answer = array($answer);
-
 	$all_answers = array('yes', 'no', 'maybe');
-
 	$not_answers = array_diff($all_answers, $the_answer);
-
 	$rsvp_meta['rsvp_'.$answer][] = $user_id;
 
 	foreach ($not_answers as $not_answer) {
-
 		$rsvp_meta['rsvp_'.$not_answer] = array_diff($rsvp_meta['rsvp_'.$not_answer], array($user_id));
-
-			// if(($key = array_search($user_id, $rsvp_meta['rsvp_'.$not_answer])) !== false) {
-   //  			unset($rsvp_meta['rsvp_'.$not_answer][$key]);
-			// }
 	}
 		$return = update_post_meta( $event_id, $meta_key, $rsvp_meta );
 		if ($return == true) {
@@ -42,14 +156,12 @@ function rsvp_answer_current($answer, $user_id, $event_id){
 		}
 };
 
-
-//Function to return simple array of users who should receive RSVP alerts    
 function rsvp_get_users() {
 
 //This gets users based on a BuddyPress xprofile field -> other methods could be inserted if necessary
 //Should also tie this in to an options page
 	global $wpdb;// need this to be able to do the custom query below - without it, it fails hard.
-$rsvp_field_id = xprofile_get_field_id_from_name('RSVP Requests?');
+	$rsvp_field_id = xprofile_get_field_id_from_name('RSVP Requests?');
 // all users who have chosen to receive RSVPs
 $rsvp_users = $wpdb->get_results( 
 		"
@@ -102,11 +214,19 @@ function rsvp_responses ($event_id) {
 		return NULL;
 	}
 }
+/**
+	 * Sorts an array of objects by the value of one of the object properties or array keys
+	 *
+	 * @param array $array
+	 * @param key value $id
+	 * @param boolean $sort_ascending
+	 * @param boolean $is_object_array
+	 * @return array
+	 * lifted from http://php.net/manual/en/function.sort.php (david wh thomas at gm at 1l dot c0m). Function renamed to arraysort from vsort
+	 */
+//Function to return simple array of users who should receive RSVP alerts    
 
-
-
-
- function arraysort($array, $id="id", $sort_ascending=true, $is_object_array = false) {
+function arraysort($array, $id="id", $sort_ascending=true, $is_object_array = false) {
 		$temp_array = array();
 		while(count($array)>0) {
 			$lowest_id = 0;
@@ -143,6 +263,4 @@ function rsvp_responses ($event_id) {
 					return array_reverse($temp_array);
 				}
 	}
-
-
 ?>
