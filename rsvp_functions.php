@@ -1,5 +1,44 @@
 <?php
 
+function rsvp_ticklist_handler() {
+	require_once($_SERVER['DOCUMENT_ROOT'].'/wp-load.php');
+	// global $EM_Event;
+	// global $wpdb;
+
+	$user_id = $_POST ['id'];
+	$user_bits = explode('user', $user_id);
+	$user_id = $user_bits [1];
+	$event_id = $_POST ['e_id'];
+	$rsvp_date = $_POST['sent'];
+	$attendance = $_POST ['state'];
+	$nonce = $_POST ['nonce'];
+	$noncecheck = check_ajax_referer( 'rsvp-nonce', 'nonce', false );
+
+
+
+	if ( $noncecheck == false) {
+
+		wp_die( 'something ain\'t right' );
+
+	} else {
+
+
+		$return = rsvp_answer_current($attendance, $user_id, $event_id);
+
+		if ($return == false) {
+			echo "there was an error";
+			die();
+		}
+
+		else {
+			echo "OK";
+			die();
+		}
+
+	}
+}
+add_action('wp_ajax_rsvp_ticklist_handler', 'rsvp_ticklist_handler');
+
 function rsvp_handler() {
 
 $url = $_SERVER['REQUEST_URI'];
@@ -158,7 +197,7 @@ function rsvp_answer_current($answer, $user_id, $event_id){
 
 function rsvp_get_users() {
 
-//This gets users based on a BuddyPress xprofile field -> other methods could be inserted if necessary
+//This gets users who should receive RSVPs, based on a BuddyPress xprofile field -> other methods could be inserted if necessary
 //Should also tie this in to an options page
 	global $wpdb;// need this to be able to do the custom query below - without it, it fails hard.
 	$rsvp_field_id = xprofile_get_field_id_from_name('RSVP Requests?');

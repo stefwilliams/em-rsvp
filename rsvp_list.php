@@ -1,7 +1,5 @@
 <?php
 
-
-
 function rsvp_add_stylesheets() {
 $plugins_url = plugins_url('em-rsvp');
 	wp_register_style(				
@@ -16,6 +14,13 @@ $plugins_url = plugins_url('em-rsvp');
 }
 add_action( 'wp_enqueue_scripts', 'rsvp_add_stylesheets' );
 
+function add_ticklistscript(){
+	$pluginsurl = plugins_url ('em-rsvp');
+    wp_enqueue_script( 'rsvp_ticklist', $pluginsurl.'/js/rsvp_ticklist.js', array( 'jquery' ) );
+    wp_localize_script( 'rsvp_ticklist', 'ajax_object',
+            array( 'ajax_url' => admin_url( 'admin-ajax.php' )) );
+}
+add_action( 'init', 'add_ticklistscript' );
 
 
 function rsvp_ticklist ( $content ){
@@ -121,37 +126,9 @@ function rsvp_ticklist ( $content ){
 
 				array_push($rsvp_user_list, $user_details);
 			}
-
-			// instruments
-
-			//end function
-
-			// $rsvp_user_list_old = $wpdb->get_results( 
-			// 	$wpdb->prepare( 
-			// 		"SELECT u.ID AS 'id', um1.meta_value AS 'firstname', um2.meta_value AS 'lastname', CASE WHEN i.value IS NULL THEN '--not specified--' ELSE i.value END AS 'instrument', r.attendance, r.event, um3.meta_value AS 'role'
-			// 		FROM $wpdb->usermeta um3
-			// 		LEFT JOIN $wpdb->users u ON (u.ID = um3.user_id)
-			// 		LEFT JOIN $wpdb->usermeta um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-			// 		LEFT JOIN $wpdb->usermeta um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-			// 		LEFT JOIN sg_bp_xprofile_data i ON (u.ID = i.user_ID AND i.field_id = 2)
-			// 		LEFT JOIN sg_em_rsvprcvd r ON (u.ID = r.user and r.event = $event_id)
-			// 		WHERE um3.meta_key = 'sg_capabilities' AND um3.meta_value LIKE '%%samba%%'
-			// 		ORDER BY firstname
-			// 		"
-			//         )
-			// );
-			// echo '<pre>OLD<br />';
-			// print_r($rsvp_user_list_old);
-			// echo '</pre>';
-			//sorting function lives in rsvp_functions.php
-
 			$rsvp_user_list_lastname = arraysort($rsvp_user_list, 'lastname', true, false);
 			$rsvp_user_list_instrument = arraysort($rsvp_user_list, 'instrument', true, false);
 			$rsvp_user_list = arraysort($rsvp_user_list, 'firstname', true, false);
-
-			// echo '<pre>NEW ARRAY<br />';			
-			// print_r($rsvp_user_list_instrument);
-			// echo '</pre>';
 
 				echo '<p>Hi '.$first_name.', have a look below to see whether you\'re marked as coming to this event or not. <br />Click your name to cycle through the options.</p>';
 
@@ -166,52 +143,19 @@ function rsvp_ticklist ( $content ){
 
 
 <div class="row">
-	<div class="tab-content span9">
+	<div id="rsvp_ticklist" class="tab-content span9">
 		<?php
-		rsvp_list ($rsvp_user_list, 'first', 'active');
-		rsvp_list ($rsvp_user_list_lastname, 'last', '');
-		rsvp_list_instr ($rsvp_user_list_instrument, 'instrument');
+		$rsvp_js_meta = array(
+			'event_id' => $event_id,
+			'rsvp_sent' => $rsvp_sent,
+			'nonce' => $nonce
+			);
+		rsvp_list ($rsvp_user_list, 'first', 'active', $rsvp_js_meta);
+		rsvp_list ($rsvp_user_list_lastname, 'last', '', $rsvp_js_meta);
+		rsvp_list_instr ($rsvp_user_list_instrument, 'instrument', $rsvp_js_meta);
 		?>
 	</div>
 </div>
-
-
-
-		
-
-<script>
-//javascript for changing user RSVP status
-
-	var base_url ='<?php echo plugins_url('em-rsvp') ?>';
-
-	jQuery(function (){
-			jQuery('.rsvp_user').on('click',function(ev){
-				var t = jQuery(this);
-					if (t.hasClass('canedit')){
-						if (t.hasClass('yes')){
-							switchState(t,'yes','no');
-						} else if (t.hasClass('no')){
-							switchState(t,'no','maybe');
-						} else if (t.hasClass('maybe')){
-							switchState(t,'maybe','yes');
-						}
-					}
-			});
-		}
-	);
-
-
-function switchState(that,current,next){
-		var nonce='<?php echo $nonce ?>';
-		var id=that.attr('id');
-		var e_id='<?php echo $event_id ?>';
-		var sent_date='<?php echo $rsvp_sent ?>';
-	jQuery.get(base_url+'/rsvp_list_handler.php?nonce='+nonce+'&id='+id+'&e_id='+e_id+'&sent='+sent_date+'&state='+next,function(data, status){
-		if (data==='OK')that.removeClass(current).addClass(next);
-	})
-}
-
-</script>
 
 <?php
 		}
@@ -227,18 +171,19 @@ function switchState(that,current,next){
 }
 add_filter('the_content','rsvp_ticklist',11,1);
 
-function rsvp_list ($sortedarray, $tag, $active) {
+function rsvp_list ($sortedarray, $tag, $active, $rsvp_js_meta) {
 			echo '<div class="tab-pane '.$active.'" id="'.$tag.'">';
-			echo '<ul class="ticklist">';				
+			echo '<ul class="ticklist">';	
+
 			foreach ($sortedarray as $muso) {
-			rsvp_user_box ($muso);
+				rsvp_user_box ($muso, $rsvp_js_meta);
 			}
 			
 			echo '</ul></div>';
 
 }
 
-function rsvp_list_instr($sortedarray,$tag) {
+function rsvp_list_instr($sortedarray,$tag, $rsvp_js_meta) {
 //Make new arays of instruments, dancers, no_instrument users and unspecified instruments
 				$instruments = array();
 		
@@ -262,7 +207,7 @@ function rsvp_list_instr($sortedarray,$tag) {
 			echo '<h5>No instrument specified - Please select your instrument in your profile</h5>';
 			    foreach($sortedarray as $muso){
 			    	if(($muso['instrument'])==('--not specified--')){
-			            rsvp_user_box ($muso);
+			            rsvp_user_box ($muso, $rsvp_js_meta);
 			        }
 		   		 }
 		   	}
@@ -271,7 +216,7 @@ function rsvp_list_instr($sortedarray,$tag) {
 		   	echo '<h5>'.$instrument.'</h5>';
 			    foreach($sortedarray as $muso){
 			    	if(($muso['instrument'])==($instrument)){
-			            rsvp_user_box ($muso);
+			            rsvp_user_box ($muso, $rsvp_js_meta);
 			        }
 		   		 }
 		}
@@ -279,16 +224,20 @@ function rsvp_list_instr($sortedarray,$tag) {
 			echo '<h5>Dancers</h5>';
 			foreach($sortedarray as $muso){
 			    	if(($muso['instrument'])==('Dancer')){
-			            rsvp_user_box ($muso);
+			            rsvp_user_box ($muso, $rsvp_js_meta);
 			        }
 		   		 }		
 }
 
-function rsvp_user_box ($muso) {
+function rsvp_user_box ($muso, $rsvp_js_meta) {
 			//foreach ($sortedarray as $rsvp_user) {
+// print_r($muso);
 
 			global $current_user;
 			$user_id = $current_user->ID;
+			$rsvp_sent = $rsvp_js_meta['rsvp_sent'];
+			$event_id = $rsvp_js_meta['event_id'];
+			$nonce = $rsvp_js_meta['nonce'];
 				$avatar = get_avatar( $muso['id'], 30,'',$muso['firstname'] );
 				if ($user_id==$muso['id'] || current_user_can( 'manage_options' )){
 				$canedit = 'canedit';
@@ -304,7 +253,9 @@ function rsvp_user_box ($muso) {
 				} elseif ($att=='yes'){
 					$state = 'yes';
 				}
-				echo '<li id="user'.$muso['id'].'" class="well rsvp_user '.$state.' '.$canedit.'"><span class="avatar">'.$avatar.'</span><span class="username">'.$muso['firstname'].' '.$muso['lastname'].'</span><span class="instrument">'.$muso['instrument'].'</span>';
+				echo '<li id="user'.$muso['id'].'" class="well rsvp_user '.$state.' '.$canedit.'" data-eventid="'.$event_id.'" data-sentdate="'.$rsvp_sent.'" data-nonce="'.$nonce.'"
+
+				><span class="avatar">'.$avatar.'</span><span class="username">'.$muso['firstname'].' '.$muso['lastname'].'</span><span class="instrument">'.$muso['instrument'].'</span>';
 
 				echo '</li>';
 			//}
