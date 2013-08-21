@@ -30,47 +30,4 @@ if ( ! wp_verify_nonce( $nonce, 'rsvp-nonce' )) {
 	}
 
 }
-// $err = $wpdb->query( 
-// 	$wpdb->prepare( 
-// 		"
-// 		DELETE FROM sg_em_rsvprcvd
-// 		WHERE user = %d 
-// 		AND event = %s
-// 		",
-// 		$user_id, $event_id 
-// 		)
-// 	);
-// if ($err === false){
-// 	echo 'ERR1';
-// }
-// else
-// {
-// 	$state=2;
-// 	if ($attendance==='attend') {
-// 		$state=1;
-// 	}
-// 	elseif ($attendance==='non-attend') {
-// 		$state=0;
-// 	}
-// 	if ($state<2){
-// 		$err = $wpdb->query( 
-// 			$wpdb->prepare( 
-// 				"
-// 				INSERT INTO sg_em_rsvprcvd
-// 				(event,timestamp,user,attendance)
-// 				VALUES (%d,%d,%d,%d)
-// 				",
-// 				$event_id, $rsvp_date, $user_id, $state
-// 				)
-// 			);
-// 		if	($err === false){
-// 			echo 'ERR2';
-// 		}
-// 		else {
-// 			echo 'OK';
-// 		}	
-// 	} else {
-// 		echo 'OK';
-// 	}
-// }
 ?>

@@ -28,68 +28,33 @@ function rsvp_ticklist ( $content ){
 	//check that page is a single EVENT and user is logged in (may want to change type of user too)
 	if( is_single() && $post->post_type == 'event' && is_user_logged_in () ){
 
-			$post_id = $post->ID;
-			$event_info = EM_Events::get(array ('post_id'=>$post_id));
-			$event_info = $event_info[0];
-			$event_id = $event_info->event_id;
+		$post_id = $post->ID;
+		$event_info = EM_Events::get(array ('post_id'=>$post_id));
+		$event_info = $event_info[0];
+		$event_id = $event_info->event_id;
 
-			get_currentuserinfo();
-			$user_id = $current_user->ID;
-			$first_name = $current_user->user_firstname;
-			$user_name = $current_user->user_login;
+		get_currentuserinfo();
+		$user_id = $current_user->ID;
+		$first_name = $current_user->user_firstname;
+		$user_name = $current_user->user_login;
 
-			
-		
-		// BIN->$rsvp_sent = $wpdb->get_row( "SELECT * FROM sg_em_rsvpsent WHERE event=$event_id AND resent = 0");
-		
-		//check if current event has RSVP request
-		
 		$rsvp_responses = rsvp_responses ($event_id);
 
-		
-
-		// $rsvp_sent = $rsvp_responses['current_rsvp'];
-		// print_r($rsvp_sent);
-
-		//if so show RSVP table, else return to default behaviour
-		// $rsvp_sentdate = $rsvp_sent; //<-- Possibly remove
 		//if an RSVP request has been sent for this event
 		if ($rsvp_responses != NULL) {
-			
+
+			// get the responses for the current event
 			$rsvp_sent = $rsvp_responses['current_rsvp'];
 			$rsvp_yes = $rsvp_responses['yes'];
 			$rsvp_no = $rsvp_responses['no'];
 			$rsvp_maybe = $rsvp_responses['maybe'];
-
-		// echo "<pre>";
-		// print_r($rsvp_yes);
-		// echo "</pre>";
-		// 		echo "<pre>";
-		// print_r($rsvp_no);
-		// echo "</pre>";
-		// echo "<pre>";
-		// print_r($rsvp_maybe);
-		// echo "</pre>";
-
-
-			// print_r($rsvp_responses);
-
-			// get the responses for the current event
-			
 			//insert content BEFORE the table
 			print_r($content);
-			//check if current user has replied
-			//$user_rsvp_status = $wpdb->get_row( "SELECT * FROM sg_em_rsvprcvd WHERE event=$event_id AND user = $user_id");
-
-			//get the data we need to display RSVP info. User ID from wp_users, first and last name from usermeta, instrument form bp_xprofile and attendance from sg_em_rsvprcvd
-			
-			//Make a function of this - eventually as an options page
 
 			$instrument_field_id = xprofile_get_field_id_from_name('Your instrument');
-			$roles = array('samba_admin', 'samba_player', 'samba_editor');
-			
+	
 			// First get all the users that should be displayed (based on roles in this case)
-
+			$roles = array('samba_admin', 'samba_player', 'samba_editor');
 			$rsvp_user_list_roles = array();
 			foreach ($roles as $role) {
 				
@@ -126,8 +91,6 @@ function rsvp_ticklist ( $content ){
 						$instrument = $instruments_query[0]['value'];
 					}
 
-
-
 				// check whether user has RSVP'd, and what they have replied
 				$yes = array_search($user->ID, $rsvp_yes);
 				$no = array_search($user->ID, $rsvp_no);
@@ -143,13 +106,9 @@ function rsvp_ticklist ( $content ){
 					$attendance = 'maybe';
 				}
 				// get other usermeta
-<<<<<<< HEAD
 				$usermeta = get_userdata( $user->ID );	
 
 				$nonce = wp_create_nonce( 'rsvp-nonce' );
-=======
-				$usermeta = get_userdata( $user->ID );			
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 
 				// make user_details array to insert into master array
 				$user_details=array();
@@ -203,22 +162,21 @@ function rsvp_ticklist ( $content ){
   <li><a href="#last" data-toggle="tab">Last Name</a></li>
   <li><a href="#instrument" data-toggle="tab">Instrument</a></li>
 </ul>
-<?php
 
 
-echo '<div class="row">';
-echo '<div class="tab-content span9">';
-rsvp_list ($rsvp_user_list, 'first', 'active');
-rsvp_list ($rsvp_user_list_lastname, 'last', '');
-rsvp_list_instr ($rsvp_user_list_instrument, 'instrument');
-echo '</div>';
-echo '</div>';
 
-//			echo '<p><pre>';
-//			print_r($rsvp_user_list_instrument);
-//			echo '</pre>';
+<div class="row">
+	<div class="tab-content span9">
+		<?php
+		rsvp_list ($rsvp_user_list, 'first', 'active');
+		rsvp_list ($rsvp_user_list_lastname, 'last', '');
+		rsvp_list_instr ($rsvp_user_list_instrument, 'instrument');
+		?>
+	</div>
+</div>
 
-?>
+
+
 		
 
 <script>
@@ -248,12 +206,7 @@ function switchState(that,current,next){
 		var id=that.attr('id');
 		var e_id='<?php echo $event_id ?>';
 		var sent_date='<?php echo $rsvp_sent ?>';
-<<<<<<< HEAD
 	jQuery.get(base_url+'/rsvp_list_handler.php?nonce='+nonce+'&id='+id+'&e_id='+e_id+'&sent='+sent_date+'&state='+next,function(data, status){
-=======
-	jQuery.get(base_url+'/rsvp_list_handler.php?id='+id+'&e_id='+e_id+'&sent='+sent_date+'&state='+next,function(data, status){
-		console.log('status',status);
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 		if (data==='OK')that.removeClass(current).addClass(next);
 	})
 }
@@ -345,19 +298,11 @@ function rsvp_user_box ($muso) {
 				}
 
 				$att = $muso['attendance'];
-<<<<<<< HEAD
 				$state='maybe';
 				if ($att=='no'){
 					$state='no';
 				} elseif ($att=='yes'){
 					$state = 'yes';
-=======
-				$state='not-sure';
-				if ($att=='no'){
-					$state='non-attend';
-				} elseif ($att=='yes'){
-					$state = 'attend';
->>>>>>> 25dfb84f8ecf6d42a65252702237ca6beb36cfad
 				}
 				echo '<li id="user'.$muso['id'].'" class="well rsvp_user '.$state.' '.$canedit.'"><span class="avatar">'.$avatar.'</span><span class="username">'.$muso['firstname'].' '.$muso['lastname'].'</span><span class="instrument">'.$muso['instrument'].'</span>';
 
