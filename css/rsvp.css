@@ -11,6 +11,13 @@ width:150px;
 float: left;
 }
 
+.rsvp_user.rsvp_widget {
+	width: 60px;
+	text-align: right;
+	font-weight: bold;
+	display: inline-block;
+}
+
 li.rsvp_user .username {
 	display:block;
 	margin-top:2px;
@@ -20,29 +27,39 @@ li.rsvp_user .username {
 	
 }
 
-li.rsvp_user .instrument {
+.rsvp_user .instrument {
 	display:block;
 }
 
-li.rsvp_user.maybe {
+a.rsvp_user.rsvp_widget.maybe:before {
+	content: "maybe";
+}
+a.rsvp_user.rsvp_widget.yes:before {
+	content: "yes";
+}
+a.rsvp_user.rsvp_widget.no:before {
+	content: "no";
+}
+
+.rsvp_user.maybe {
 	background-color: #e3e3e3;
 	border:2px solid gray;
 	color:#333;
 }
 
-li.rsvp_user.yes {
+.rsvp_user.yes {
 	border:2px solid green;
 	background-color: #99d992;
 	color:#333;
 }
 
-li.rsvp_user.no {
+.rsvp_user.no {
 	border:2px solid red;
 	background-color: #d99a92;
 	color:#333;
 }
 
-li.rsvp_user.canedit {
+.rsvp_user.canedit {
 	cursor:pointer;
 }	
 

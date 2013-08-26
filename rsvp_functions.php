@@ -5,13 +5,13 @@ function rsvp_ticklist_handler() {
 	// global $EM_Event;
 	// global $wpdb;
 
-	$user_id = $_POST ['id'];
-	$user_bits = explode('user', $user_id);
-	$user_id = $user_bits [1];
+	$user_id = $_POST ['userid'];
+	// $user_bits = explode('user', $user_id);
+	// $user_id = $user_bits [1];
 	$event_id = $_POST ['e_id'];
 	$rsvp_date = $_POST['sent'];
 	$attendance = $_POST ['state'];
-	$nonce = $_POST ['nonce'];
+	// $nonce = $_POST ['nonce'];
 	$noncecheck = check_ajax_referer( 'rsvp-nonce', 'nonce', false );
 
 
@@ -218,6 +218,27 @@ $rsvp_user_ids = array();
 return $rsvp_user_ids;
 }
 
+// Get a particular user's response to an event's current RSVP
+function rsvp_user_response ($event_id, $user) {
+	$rsvp_responses = rsvp_responses ($event_id);
+	if ($rsvp_responses) {
+		$yes = array_search($user, $rsvp_responses['yes']);
+		$no = array_search($user, $rsvp_responses['no']);
+		$maybe = array_search($user, $rsvp_responses['maybe']);
+
+		if ($yes > -1) {
+			$attendance = 'yes';
+		}
+		elseif ($no > -1) {
+			$attendance = 'no';
+		}
+		else {
+			$attendance = 'maybe';
+		}
+		return $attendance;
+	}
+	else {return NULL;}
+}
 
 // Get array of responses received for the current RSVP request for a given event
 function rsvp_responses ($event_id) {

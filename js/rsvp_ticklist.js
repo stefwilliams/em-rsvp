@@ -23,21 +23,21 @@
 function switchState(that,current,next){
 	// var base_url = jQuery('#rsvp_ticklist').data('baseurl');
 		var nonce=that.data('nonce');
-		var id=that.attr('id');
+		var userid=that.data('userid');
 		var e_id=that.data('eventid');
 		var sent_date= that.data('sentdate');
-		console.log(nonce);
+		// console.log(nonce);
 
     var data = {
     action: "rsvp_ticklist_handler",
-    id: id,
+    userid: userid,
     e_id: e_id,
     sent: sent_date,
     state: next,
     nonce: nonce
   };
   jQuery.post(ajax_object.ajax_url, data, function(response) {
-  	console.log(that);
+  	console.log(data);
 	if (response==='OK')that.removeClass(current).addClass(next);
   });
 }

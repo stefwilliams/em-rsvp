@@ -239,7 +239,7 @@ function rsvp_user_box ($muso, $rsvp_js_meta) {
 			$event_id = $rsvp_js_meta['event_id'];
 			$nonce = $rsvp_js_meta['nonce'];
 				$avatar = get_avatar( $muso['id'], 30,'',$muso['firstname'] );
-				if ($user_id==$muso['id'] || current_user_can( 'manage_options' )){
+				if ($user_id==$muso['id'] || current_user_can( 'edit_events' )){
 				$canedit = 'canedit';
 				}
 				else {
@@ -253,7 +253,7 @@ function rsvp_user_box ($muso, $rsvp_js_meta) {
 				} elseif ($att=='yes'){
 					$state = 'yes';
 				}
-				echo '<li id="user'.$muso['id'].'" class="well rsvp_user '.$state.' '.$canedit.'" data-eventid="'.$event_id.'" data-sentdate="'.$rsvp_sent.'" data-nonce="'.$nonce.'"
+				echo '<li class="well rsvp_user '.$state.' '.$canedit.'" data-eventid="'.$event_id.'" data-userid="'.$muso['id'].'" data-sentdate="'.$rsvp_sent.'" data-nonce="'.$nonce.'"
 
 				><span class="avatar">'.$avatar.'</span><span class="username">'.$muso['firstname'].' '.$muso['lastname'].'</span><span class="instrument">'.$muso['instrument'].'</span>';
 
