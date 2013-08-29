@@ -191,7 +191,7 @@ $rsvp_msg =
 <p>(This RSVP request was sent by $event_contact.)</p>
 
 MSG;
-		wp_mail (/*$rsvp_user->user_email*/'stefwilliams+rsvp_user@gmail.com', $rsvp_header, $rsvp_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_header, $rsvp_msg);
 	}
 }
 elseif ($rsvp_status == 'resend_rsvp') {
@@ -233,7 +233,7 @@ $rsvp_resend_msg =
 <br/>
 <p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
-		wp_mail (/*$rsvp_user->user_email*/'stefwilliams+rsvp_user_resend@gmail.com', $rsvp_resend_header, $rsvp_resend_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_resend_header, $rsvp_resend_msg);
 }
 
 //get user details for those who HAVE already replied
@@ -265,7 +265,7 @@ $rsvp_special_msg =
 <br/>
 <p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
-		wp_mail (/*$rsvp_user->user_email*/'stefwilliams+rsvp_user_resend_special@gmail.com', $rsvp_special_header, $rsvp_special_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_special_header, $rsvp_special_msg);
 }
 
 }
