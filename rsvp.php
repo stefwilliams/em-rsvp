@@ -147,11 +147,16 @@ $event_location = $EM_Event->output('#_LOCATIONNAME');
 $event_dates = $EM_Event->output('#_EVENTDATES');
 $event_time = $EM_Event->output('#_EVENTTIMES');
 $event_category = $EM_Event->output('#_CATEGORYNAME');
-$event_contact = $EM_Event->output('#_CONTACTNAME');
+$event_owner = $EM_Event->post_author;
+	$event_owner_object = get_userdata($event_owner);
+	$event_owner_email = $event_owner_object->user_email;
+	$event_contact = $event_owner_object->display_name;
 $event_notes = $EM_Event->output('#_EVENTNOTES');
 $event_excerpt = $EM_Event->post_excerpt;
 $event_url = $EM_Event->output('#_EVENTURL');
 $rsvp_url = site_url( 'thanks-for-your-reply');
+$rsvp_headers = 'From:'.$event_contact.'<'.$event_owner_email.'>'."\r\n";
+
 //get all users who have opted to receive RSVPs
 $rsvp_all_users = rsvp_get_users();
 
@@ -168,7 +173,7 @@ if ($rsvp_status == 'send_rsvp') {
 	foreach ($rsvp_users as $rsvp_user) {
 		$md5 = md5($rsvp_user->ID.$event_id.$timestamp);
 	//message for first RSVP being sent
-		$rsvp_header = '[SG] A new event has been listed. Can you make it?';
+		$rsvp_subject = '[SG] A new event has been listed. Can you make it?';
 
 $debug_user_meta = serialize($rsvp_user);
 
@@ -181,19 +186,23 @@ $rsvp_msg =
 <h4>Location: $event_location</h4>
 <h4>Category: $event_category</h4>
 <br/>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a><br />
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a><br />
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+</p>
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+</p>
+<p>
 <a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
-<br/>
+</p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
 <p>Band-member info: $event_excerpt</p>
-<p>(This RSVP request was sent by $event_contact.)</p>
 
 MSG;
-		wp_mail ($rsvp_user->user_email, $rsvp_header, $rsvp_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_subject, $rsvp_msg, $rsvp_headers);
 	}
 }
 elseif ($rsvp_status == 'resend_rsvp') {
@@ -214,7 +223,7 @@ elseif ($rsvp_status == 'resend_rsvp') {
 	foreach ($rsvp_users_resend_simple as $rsvp_user) {
 		$md5 = md5($rsvp_user->ID.$event_id.$timestamp);
 	//message for RSVP being resent
-		$rsvp_resend_header = '[SG] An event\'s details have changed. Please ignore previous emails';
+		$rsvp_resend_subject = '[SG] An event\'s details have changed. Please ignore previous emails';
 $rsvp_resend_msg = 
 <<<MSG
 <p>This event's details have changed. Please ignore previous RSVP requests for this event.</p>
@@ -225,18 +234,22 @@ $rsvp_resend_msg =
 <h4>Location: $event_location</h4>
 <h4>Category: $event_category</h4>
 <br/>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a><br />
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a><br />
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+</p>
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+</p>
+<p>
 <a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
-<br/>
+</p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
 <p>Band-member info: $event_excerpt</p>
-<p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
-		wp_mail ($rsvp_user->user_email, $rsvp_resend_header, $rsvp_resend_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_resend_subject, $rsvp_resend_msg, $rsvp_headers);
 }
 
 //get user details for those who HAVE already replied
@@ -246,7 +259,7 @@ MSG;
 	foreach ($rsvp_users_resend_special as $rsvp_user) {
 		$md5 = md5($rsvp_user->ID.$event_id.$timestamp);
 //message for RSVP being resent. Special alert for people who have already replied
-		$rsvp_special_header = '[SG]Event changed! Please update your RSVP status';
+		$rsvp_special_subject = '[SG]Event changed! Please update your RSVP status';
 $rsvp_special_msg =
 <<<MSG
 <p>This event's details have changed. Please ignore previous RSVP requests for this event and update your status.</p>
@@ -258,18 +271,22 @@ $rsvp_special_msg =
 <h4>Location: $event_location</h4>
 <h4>Category: $event_category</h4>
 <br/>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a><br />
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a><br />
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+</p>
+<p>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+</p>
+<p>
 <a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
-<br/>
+</p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
 <p>Band-member info: $event_excerpt</p>
-<p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
-		wp_mail ($rsvp_user->user_email, $rsvp_special_header, $rsvp_special_msg);
+		wp_mail ($rsvp_user->user_email, $rsvp_special_subject, $rsvp_special_msg, $rsvp_headers);
 }
 
 }
