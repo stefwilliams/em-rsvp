@@ -47,6 +47,8 @@ function rsvp_ticklist ( $content ){
 
 		//if an RSVP request has been sent for this event
 		if ($rsvp_responses != NULL) {
+			echo '<p>Hi '.$first_name.', have a look below to see whether you\'re marked as coming to this event or not. <br />Click your name to cycle through the options.</p><hr />';
+
 
 			// get the responses for the current event
 			$rsvp_sent = $rsvp_responses['current_rsvp'];
@@ -130,8 +132,7 @@ function rsvp_ticklist ( $content ){
 			$rsvp_user_list_instrument = arraysort($rsvp_user_list, 'instrument', true, false);
 			$rsvp_user_list = arraysort($rsvp_user_list, 'firstname', true, false);
 
-				echo '<p>Hi '.$first_name.', have a look below to see whether you\'re marked as coming to this event or not. <br />Click your name to cycle through the options.</p>';
-
+				
 ?>
 <hr />
 <p>Order by:</p><ul class="nav nav-tabs">

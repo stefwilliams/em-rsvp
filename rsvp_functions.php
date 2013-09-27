@@ -94,6 +94,7 @@ $event_start_date = date('l jS M Y', $event_start);
 $event_start_time = date('g:i a', $event_start);
 $event_end_date = date('- l jS M Y', $event_end);
 $event_end_time = date('- g:i a', $event_end);
+$event_notes = wpautop($event_info->notes);
 
 if ($event_location->location_postcode) {
 	$postcode = $event_location->location_postcode;
@@ -107,14 +108,14 @@ if ($event_start_date == $event_start_date) {
 $event_display = 
 
 <<<EVT
-<h3>$event_info->event_name</h3>
+<h4>$event_info->event_name</h4>
 <p><strong>Date: </strong>$event_start_date $event_end_date</p>
 <p><strong>Time: </strong>$event_start_time $event_end_time</p>
 <p><strong>Location: </strong>$event_location->location_name, $event_location->location_address $postcode</p>
-<h4>Brief</h4>
+<h4>Event Details</h4>
+<p>$event_notes</p>
+<h4>Band Member Info</h4>
 <p>$event_info->post_excerpt</p>
-<h4>Full Description</h4>
-<p>$event_info->notes</p>
 <p>Visit the web site for <a href="$event_info->guid">full details</a> of this event.</p>
 EVT;
 
@@ -152,17 +153,23 @@ if ($rsvp_check == $timestamp) {
 
 		if ($rsvp_answer == 'yes') {
 			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
-			echo '<h3>Yay! You can make it!</h3> <p>  See you there...</p>';
+			echo '<h3>Yay! You can make it!</h3> <p>  See you there...</p><hr />';
+			echo "<h3>Event Details</h3>";
+			echo $event_display;
 		}		
 
 		elseif ($rsvp_answer == 'no') {
 			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
-			echo '<h3>Aww! It\'s a shame you can\'t come!</h3> <p> If anything changes, please update the ticklist on the event page</p>';
+			echo '<h3>Aww! It\'s a shame you can\'t come!</h3> <p> If anything changes, please update the ticklist on the event page</p><hr />';
+			echo "<h3>Event Details</h3>";
+			echo $event_display;
 		}
 
 		elseif ($rsvp_answer == 'maybe') {
 			rsvp_answer_current($rsvp_answer, $user_id, $event_id);
-			echo '<h3>Not sure, huh?</h3> <p>Please update the ticklist when you know for sure</p>';
+			echo '<h3>Not sure, huh?</h3> <p>Please update the ticklist when you know for sure</p><hr />';
+			echo "<h3>Event Details</h3>";
+			echo $event_display;
 		}
 
 	}

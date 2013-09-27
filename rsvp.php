@@ -149,6 +149,7 @@ $event_time = $EM_Event->output('#_EVENTTIMES');
 $event_category = $EM_Event->output('#_CATEGORYNAME');
 $event_contact = $EM_Event->output('#_CONTACTNAME');
 $event_notes = $EM_Event->output('#_EVENTNOTES');
+$event_excerpt = $EM_Event->post_excerpt;
 $event_url = $EM_Event->output('#_EVENTURL');
 $rsvp_url = site_url( 'thanks-for-your-reply');
 //get all users who have opted to receive RSVPs
@@ -188,6 +189,7 @@ $rsvp_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
+<p>Band-member info: $event_excerpt</p>
 <p>(This RSVP request was sent by $event_contact.)</p>
 
 MSG;
@@ -231,6 +233,7 @@ $rsvp_resend_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
+<p>Band-member info: $event_excerpt</p>
 <p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
 		wp_mail ($rsvp_user->user_email, $rsvp_resend_header, $rsvp_resend_msg);
@@ -263,6 +266,7 @@ $rsvp_special_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
+<p>Band-member info: $event_excerpt</p>
 <p>(This RSVP request was sent by $event_contact.)</p>
 MSG;
 		wp_mail ($rsvp_user->user_email, $rsvp_special_header, $rsvp_special_msg);
