@@ -29,15 +29,16 @@ function rsvp_ticklist ( $content ){
 			global $EM_Event;
 			global $current_user;
 
-
 	//check that page is a single EVENT and user is logged in (may want to change type of user too)
 	if( is_single() && $post->post_type == 'event' && is_user_logged_in () ){
 
 		$post_id = $post->ID;
 		$event_info = EM_Events::get(array ('post_id'=>$post_id));
+		if ($event_info == NULL) { // event info is only populated with future events, so can return if
+			return $content;
+		}
 		$event_info = $event_info[0];
 		$event_id = $event_info->event_id;
-
 		get_currentuserinfo();
 		$user_id = $current_user->ID;
 		$first_name = $current_user->user_firstname;
