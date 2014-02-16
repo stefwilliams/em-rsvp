@@ -66,7 +66,13 @@ class rsvp_widget extends WP_Widget {
 
       $event_start = $event->start;
       $event_start_date = date('l jS M Y', $event_start);
+
+      if ($event->event_all_day == "1") {
+        $event_start_time = "All Day";
+      }
+      else {
       $event_start_time = date('g:i a', $event_start);
+      }
 
       $rsvp_sent = get_post_meta( $event->id, 'rsvp_current', true );
 
