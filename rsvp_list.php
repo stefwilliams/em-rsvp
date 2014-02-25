@@ -16,8 +16,8 @@ add_action( 'wp_enqueue_scripts', 'rsvp_add_stylesheets' );
 
 function add_ticklistscript(){
 	$pluginsurl = plugins_url ('em-rsvp');
-    wp_enqueue_script( 'rsvp_ticklist', $pluginsurl.'/js/rsvp_ticklist.js', array( 'jquery' ) );
-    wp_localize_script( 'rsvp_ticklist', 'ajax_object',
+    wp_enqueue_script( 'rsvp_ticklist_js', $pluginsurl.'/js/rsvp_ticklist.js', array( 'jquery' ) );
+    wp_localize_script( 'rsvp_ticklist_js', 'ajax_object',
             array( 'ajax_url' => admin_url( 'admin-ajax.php' )) );
 }
 add_action( 'init', 'add_ticklistscript' );
@@ -28,6 +28,8 @@ function rsvp_ticklist ( $content ){
 			global $wpdb;
 			global $EM_Event;
 			global $current_user;
+			$prefix = $wpdb->prefix;
+			$table_name = $prefix."bp_xprofile_data";
 
 	//check that page is a single EVENT and user is logged in (may want to change type of user too)
 	if( is_single() && $post->post_type == 'event' && is_user_logged_in () ){
@@ -86,7 +88,7 @@ function rsvp_ticklist ( $content ){
 				$instruments_query = $wpdb->get_results( 
 						"
 						SELECT value
-						FROM sg_bp_xprofile_data 
+						FROM $table_name 
 						WHERE field_id = $instrument_field_id 
 						AND user_id = $user->ID
 						", ARRAY_A

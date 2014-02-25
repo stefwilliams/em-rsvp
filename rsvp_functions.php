@@ -1,7 +1,8 @@
 <?php
 
 function rsvp_ticklist_handler() {
-	require_once($_SERVER['DOCUMENT_ROOT'].'/wp-load.php');
+	// $wp_root = site_url();
+	// include_once($wp_root.'/wp-load.php');
 	// global $EM_Event;
 	// global $wpdb;
 
@@ -11,26 +12,26 @@ function rsvp_ticklist_handler() {
 	$event_id = $_POST ['e_id'];
 	$rsvp_date = $_POST['sent'];
 	$attendance = $_POST ['state'];
-	// $nonce = $_POST ['nonce'];
+	$nonce = $_POST ['nonce'];
 	$noncecheck = check_ajax_referer( 'rsvp-nonce', 'nonce', false );
 
 
 
 	if ( $noncecheck == false) {
-
 		wp_die( 'something ain\'t right' );
 
 	} else {
 
-
 		$return = rsvp_answer_current($attendance, $user_id, $event_id);
 
 		if ($return == false) {
+			error_log("returned false");
 			echo "there was an error";
 			die();
 		}
 
 		else {
+			error_log("returned true");
 			echo "OK";
 			die();
 		}
@@ -207,12 +208,14 @@ function rsvp_get_users() {
 //This gets users who should receive RSVPs, based on a BuddyPress xprofile field -> other methods could be inserted if necessary
 //Should also tie this in to an options page
 	global $wpdb;// need this to be able to do the custom query below - without it, it fails hard.
+	$prefix = $wpdb->prefix;
+	$table_name = $prefix.'bp_xprofile_data';
 	$rsvp_field_id = xprofile_get_field_id_from_name('RSVP Requests?');
 // all users who have chosen to receive RSVPs
 $rsvp_users = $wpdb->get_results( 
 		"
 		SELECT user_id 
-		FROM sg_bp_xprofile_data 
+		FROM $table_name 
 		WHERE field_id = $rsvp_field_id 
 		AND value = 'Yes';
 		", ARRAY_A

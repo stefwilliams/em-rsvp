@@ -37,7 +37,7 @@ function switchState(that,current,next){
     nonce: nonce
   };
   jQuery.post(ajax_object.ajax_url, data, function(response) {
-  	console.log(data);
+  	// console.log(data);
 	if (response==='OK')that.removeClass(current).addClass(next);
   });
 }
