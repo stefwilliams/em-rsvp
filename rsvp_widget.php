@@ -63,7 +63,10 @@ class rsvp_widget extends WP_Widget {
         // $event_info = EM_Events::get(array ('event'=>$event_id));
         // $event_info = $event_info[0];
       $event_location=$event->get_location();
-
+      $event_cats = $event->get_categories();
+      $event_cat_objs = $event_cats->categories;
+      $event_cat = reset($event_cat_objs)->name;
+      $event_cat_slug = reset($event_cat_objs)->slug;
       $event_start = $event->start;
       $event_start_date = date('l jS M Y', $event_start);
 
@@ -80,7 +83,7 @@ class rsvp_widget extends WP_Widget {
       ?>
       <tr>
         <td>
-          <p><a href="<?php echo $event->guid; ?>" title="<?php echo $event->event_name; ?>"><?php echo $event->event_name; ?></a></p>
+          <p><a style="text-decoration:underline;" href="<?php echo $event->guid; ?>" title="<?php echo $event->event_name; ?>"><?php echo $event->event_name; ?></a><span class="pull-right event_cat <?php echo $event_cat_slug; ?>"><?php echo $event_cat; ?></span></p>
           <i><?php if ($event_location->location_name) {
             echo $event_location->location_name.', '.$event_location->location_town;
           }
