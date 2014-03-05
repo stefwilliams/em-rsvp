@@ -133,6 +133,8 @@ if ($rsvp_check == $timestamp) {
 
 	if (/*$rsvp_resent == 1*/ $rsvp_iscurrent == false) {
 
+		$new_md5 = md5($user_id.$event_id.$rsvp_check);
+
 	//Alert user to problem.
 
 	echo '<p><strong>The RSVP email link you just used is not current. Some details may have changed. </strong></p> <p>The latest event details are below. Please double-check whether you can make it.</p>';
@@ -142,9 +144,9 @@ if ($rsvp_check == $timestamp) {
 	echo $event_display;
 	//Provide new link to respond with.
 	echo '<p>Can you make the event as detailed above?</p>';
-	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=1">Yes, I can!</a></p>';
-	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=0">No, sorry...</a></p>';
-	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&timestamp='.$rsvp_check.'&user_id='.$user_id.'&attendance=2">Not sure, I\'ll have to think about it</a></p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&amp;timestamp='.$rsvp_check.'&amp;md5='.$new_md5.'&amp;user_id='.$user_id.'&amp;attendance=1">Yes, I can!</a></p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&amp;timestamp='.$rsvp_check.'&amp;md5='.$new_md5.'&amp;user_id='.$user_id.'&amp;attendance=0">No, sorry...</a></p>';
+	echo '<p><a href="'.$rsvp_url.'?event_id='.$event_id.'&amp;timestamp='.$rsvp_check.'&amp;md5='.$new_md5.'&amp;user_id='.$user_id.'&amp;attendance=2">Not sure, I\'ll have to think about it</a></p>';
 
 	}
 

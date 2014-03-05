@@ -187,13 +187,13 @@ $rsvp_msg =
 <h4>Category: $event_category</h4>
 <br/>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=1">Yes! I'm in!</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=0">Nope, sorry got better things to do.</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=2">I'm not sure. Will confirm later.</a>
 </p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
@@ -235,13 +235,13 @@ $rsvp_resend_msg =
 <h4>Category: $event_category</h4>
 <br/>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=1">Yes! I'm in!</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=0">Nope, sorry got better things to do.</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=2">I'm not sure. Will confirm later.</a>
 </p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
@@ -272,13 +272,13 @@ $rsvp_special_msg =
 <h4>Category: $event_category</h4>
 <br/>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=1">Yes! I'm in!</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=1">Yes! I'm in!</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=0">Nope, sorry got better things to do.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=0">Nope, sorry got better things to do.</a>
 </p>
 <p>
-<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&timestamp=$timestamp&md5=$md5&user_id=$rsvp_user->ID&attendance=2">I'm not sure. Will confirm later.</a>
+<a class="$rsvp_status" href="$rsvp_url/?event_id=$event_id&amp;timestamp=$timestamp&amp;md5=$md5&amp;user_id=$rsvp_user->ID&amp;attendance=2">I'm not sure. Will confirm later.</a>
 </p>
 <p>Note: If you don't reply to this email or change your mind later, you can always update your status on the event's <a href="$event_url">web page.</a></p>
 <br/>
