@@ -25,13 +25,13 @@ function rsvp_ticklist_handler() {
 		$return = rsvp_answer_current($attendance, $user_id, $event_id);
 
 		if ($return == false) {
-			error_log("returned false");
+			// error_log("returned false");
 			echo "there was an error";
 			die();
 		}
 
 		else {
-			error_log("returned true");
+			// error_log("returned true");
 			echo "OK";
 			die();
 		}
