@@ -75,6 +75,7 @@ if ($event_id !=NULL) {
 			echo '<input type="checkbox" name="rsvp_status" value="send_rsvp" /> Send an RSVP Email for this event';
 		}
 		echo "</div>";
+		date_default_timezone_set('UTC');
 }
 
 // action to perform on Save
