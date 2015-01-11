@@ -46,7 +46,18 @@ class rsvp_widget extends WP_Widget {
     ?>
     
 
-    <?php $e_l = EM_Events::get(); 
+    <?php 
+    /*ENCONTRO EXCLUSIONS*/
+    $encontro_term = get_term_by( 'name', 'encontro', 'event-categories');
+    $encontro_term_id = $encontro_term->term_id;
+    $sub_cats = get_term_children( $encontro_term_id, 'event-categories' );
+    //make a list of all encontro cats and sub-cats, with a '-' in front, to exclude from query
+    $excludeall_encontro = '-'.$encontro_term_id.',-'.implode(',-', $sub_cats);
+    $args = array (
+      'category' => $excludeall_encontro,
+      );
+    /*END ENCONTRO EXCLUSIONS*/
+    $e_l = EM_Events::get($args); 
     $nonce = wp_create_nonce( 'rsvp-nonce' );
 
     ?>
