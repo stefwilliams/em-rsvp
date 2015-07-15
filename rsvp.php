@@ -28,7 +28,7 @@ function rsvp_add_custom_box () {
 	'high'
 	);
 }
-
+ 
 add_action( 'em_front_event_form_footer', 'rsvp_box' );
 
 //3) inserting some HTML into the Meta box
@@ -44,6 +44,7 @@ function rsvp_box (){
 //if there is an event number
 if ($event_id !=NULL) {
 	$rsvp_responses = rsvp_responses($event_id);
+
 	$rsvp_check = $rsvp_responses['current_rsvp'];
 	$users_yes = $rsvp_responses['yes_count'];
 	$users_no = $rsvp_responses['no_count'];
@@ -83,19 +84,25 @@ add_filter ('em_event_save', 'rsvp_processing',1,1);
 
 //Process RSVPs depending on results of $_POST value
 function rsvp_processing ($result) {
-
+	// error_log($_POST);
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		error_log('autosaved - didn\'t send email');
+		return;
+	}
 	if ($result) { // checks whether the event was actually saved, before proceeding, otherwise missing location or date fields will still result in RSVP being sent
 		//time which will be used to differentiate rsvps and resent rsvps. This will also be the main key to identify current RSVP to users and link to rsvp results
 		$timestamp = time();
+		// error_log("timestamp=".$timestamp);
 		$old_timestamp = ''; // <-- gets set only if resend_rsvp is true
 		//global variables again for Events
 		//global $wpdb;
 		global $EM_Event;
 		//current event'd ID
 		$event_id = $EM_Event->id;
+		// error_log("event_id=".$event_id);
 		//check value returned from checkboxes in rsvp_box
 		$rsvp_status = $_POST['rsvp_status'];
-
+// error_log("rsvp_status=".$rsvp_status);
 			if ($rsvp_status == 'resend_rsvp') {
 				//find the eventmeta for the RSVP record that is being replaced
 				$old_timestamp = get_post_meta( $event_id, 'rsvp_current', true ); // <-- gets set only if resend_rsvp is true
@@ -120,6 +127,7 @@ function rsvp_processing ($result) {
 				$meta_key = 'rsvp_'.$timestamp;
 				$rsvp_eventmeta = array(
 					'event_id'			=> $event_id,
+					'post_id'			=> $EM_Event->post_id,
 					'current' 			=> 'yes',
 					'replaces_rsvp' 	=> $old_timestamp, //empty if not a resent rsvp
 					'event_name' 		=> $EM_Event->event_name,
@@ -133,8 +141,10 @@ function rsvp_processing ($result) {
 				//send the eventmeta for the mail function to use
 				// SEND THE MAILS BEFORE updating the post_meta, otherwise it will send to the wrong people :)
 				rsvp_email($rsvp_eventmeta, $rsvp_status, $timestamp);
-				update_post_meta( $event_id, $meta_key, $rsvp_eventmeta );
-				update_post_meta( $event_id, 'rsvp_current', $timestamp );
+				$o = update_post_meta( $event_id, $meta_key, $rsvp_eventmeta );
+				// error_log("o=".$o);
+				$c = update_post_meta( $event_id, 'rsvp_current', $timestamp );
+				// error_log("c=".$c);
 			}
 	}	//end if ($result)
 	return $result;
@@ -143,6 +153,7 @@ function rsvp_processing ($result) {
 function rsvp_email($rsvp_eventmeta, $rsvp_status, $timestamp) {
 $EM_Event = em_get_event($rsvp_eventmeta['event_id']);
 $event_id = $rsvp_eventmeta['event_id'];
+$post_id = $rsvp_eventmeta['post_id'];
 $event_name = $EM_Event->output('#_EVENTLINK');
 $event_location = $EM_Event->output('#_LOCATIONNAME');
 $event_dates = $EM_Event->output('#_EVENTDATES');
@@ -150,13 +161,24 @@ $event_time = $EM_Event->output('#_EVENTTIMES');
 $event_category = $EM_Event->output('#_CATEGORYNAME');
 $event_owner = $EM_Event->post_author;
 	$event_owner_object = get_userdata($event_owner);
-	$event_owner_email = $event_owner_object->user_email;
-	$event_contact = $event_owner_object->display_name;
+
+//lifted from wp_mail function - to find domain name
+        $sitename = strtolower( $_SERVER['SERVER_NAME'] );
+        if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+            $sitename = substr( $sitename, 4 );
+        }
+	$noreply_email = 'noreply@'.$sitename;
+
+$blogname = get_bloginfo('name');
+
+
+	$rsvp_name = $blogname.' RSVP';
 $event_notes = $EM_Event->output('#_EVENTNOTES');
-$event_excerpt = $EM_Event->post_excerpt;
+$band_info = get_post_meta( $post_id, 'bandinfo', true );
+
 $event_url = $EM_Event->output('#_EVENTURL');
 $rsvp_url = site_url( 'thanks-for-your-reply');
-$rsvp_headers = 'From:'.$event_contact.'<'.$event_owner_email.'>'."\r\n";
+$rsvp_headers = 'From:'.$rsvp_name.'<'.$noreply_email.'>'."\r\n";
 
 //get all users who have opted to receive RSVPs
 $rsvp_all_users = rsvp_get_users();
@@ -200,7 +222,7 @@ $rsvp_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>Band-member info: $event_excerpt</p>
+<p>Band-member info: $band_info</p>
 
 MSG;
 		wp_mail ($rsvp_user->user_email, $rsvp_subject, $rsvp_msg, $rsvp_headers);
@@ -248,7 +270,7 @@ $rsvp_resend_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>Band-member info: $event_excerpt</p>
+<p>Band-member info: $band_info</p>
 MSG;
 		wp_mail ($rsvp_user->user_email, $rsvp_resend_subject, $rsvp_resend_msg, $rsvp_headers);
 }
@@ -285,7 +307,7 @@ $rsvp_special_msg =
 <br/>
 <p>Event Details: $event_notes</p>
 <br/>
-<p>Band-member info: $event_excerpt</p>
+<p>Band-member info: $band_info</p>
 MSG;
 		wp_mail ($rsvp_user->user_email, $rsvp_special_subject, $rsvp_special_msg, $rsvp_headers);
 }
