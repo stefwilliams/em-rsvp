@@ -207,6 +207,11 @@ function rsvp_answer_current($answer, $user_id, $event_id){
 
 function rsvp_get_users() {
 
+if(RSVP_DEBUG) {
+	global $debug_users;
+	return $debug_users;
+}
+
 //This gets users who should receive RSVPs, based on a BuddyPress xprofile field -> other methods could be inserted if necessary
 //Should also tie this in to an options page
 	global $wpdb;// need this to be able to do the custom query below - without it, it fails hard.

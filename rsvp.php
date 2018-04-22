@@ -8,7 +8,10 @@ Author: Stef Williams
 Author URI: http://URI_Of_The_Plugin_Author
 License: GPL2
 */
-
+define('RSVP_DEBUG', true);
+$debug_users = array (
+	'5', //stef
+);
 /*WIDGET*/
 include ('rsvp_functions.php');
 include ('rsvp_widget.php');
